@@ -282,5 +282,5 @@ plot(fit, show_rownames = TRUE)
 ## The 'threshold' filter has removed 8 categories:
 ## IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&CD107a, IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&CD154&!CD107a
 ```
-![image](https://user-images.githubusercontent.com/89667908/145899900-449a7b7f-0edc-48bf-8e1b-e3cf0ca97ef3.png)
+![image](https://user-images.githubusercontent.com/89667908/145901258-89ba874c-77db-4c3e-b46c-565a9ac0be53.png)
 
