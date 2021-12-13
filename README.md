@@ -80,3 +80,12 @@ gs <- flowjo_to_gatingset(ws,
                           path = fcs_subfolder, 
                           extend_val = -10000)
 ```
+
+### QC
+Make sure that the gating trees are consistent for all samples.
+```R
+pop_lists <- lapply(gs, gh_get_pop_paths)
+unique(pop_lists)
+```
+
+Remove channels from flow data that are not used by gates.
