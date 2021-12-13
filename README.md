@@ -87,6 +87,40 @@ Make sure that the gating trees are consistent for all samples.
 pop_lists <- lapply(gs, gh_get_pop_paths)
 unique(pop_lists)
 ```
+```R
+## [[1]]
+##  [1] "root"                                                         
+##  [2] "/Time"                                                        
+##  [3] "/Time/CD3+"                                                   
+##  [4] "/Time/CD3+/CD14-CD19-"                                        
+##  [5] "/Time/CD3+/CD14-CD19-/Lymphocytes"                            
+##  [6] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet"                    
+##  [7] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live"               
+##  [8] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+"          
+##  [9] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CCR7+"    
+## [10] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD45RA+"  
+## [11] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD107a+"  
+## [12] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD154+"   
+## [13] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IFNg+"    
+## [14] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL2+"     
+## [15] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL4_5_13+"
+## [16] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL17a+"   
+## [17] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/TNFa+"    
+## [18] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+"          
+## [19] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CCR7+"    
+## [20] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD45RA+"  
+## [21] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD107a+"  
+## [22] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD154+"   
+## [23] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IFNg+"    
+## [24] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL2+"     
+## [25] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL4_5_13+"
+## [26] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL17a+"   
+## [27] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/TNFa+"    
+## [28] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD38+"         
+## [29] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/DN"            
+## [30] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/DP"            
+## [31] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/HLADR+"
+```
 Remove channels from flow data that are not used by gates.
 ```R
 gs <- gs_remove_redundant_channels(gs) # drop SSC-H, V655-A, V570-A
@@ -147,6 +181,9 @@ Look at some basic info about our COMPASSContainer.
 ```R
 CC
 ```
+```R
+## A COMPASSContainer with 80 samples from 16 individuals, containing data across 7 markers.
+```
 
 ## Run COMPASS
 Fit the COMPASS model using the COMPASSContainer. To fit the COMPASS model, we need to specify how to identify the samples that are our treatment condition and our control condition. Here, we will run COMPASS on the samples stimmed by spike 1 with DMSO as our negative control. For now, let's just do 100 iterations for speed.
@@ -179,6 +216,25 @@ write.table(FS_PFS_df,
             file = file.path("out/COMPASSResult", "FS_PFS.tsv"),
             sep = "\t", row.names = FALSE, quote = FALSE)
 FS_PFS_df
+```
+```R
+##    SAMPLE ID          FS          PFS
+## 1     188C-1 0.010866142 0.0083877551
+## 2     188C-2 0.057244094 0.0307482993
+## 3     191C-1 0.025039370 0.0169455782
+## 4     191C-2 0.033385827 0.0195102041
+## 5     210C-1 0.005511811 0.0031462585
+## 6     210C-2 0.047559055 0.0253061224
+## 7     235C-1 0.001181102 0.0006122449
+## 8     235C-2 0.020236220 0.0089965986
+## 9      27H-1 0.004960630 0.0025204082
+## 10     27H-2 0.049921260 0.0269795918
+## 11     35H-1 0.013937008 0.0108095238
+## 12     35H-2 0.019763780 0.0104387755
+## 13     38H-1 0.008740157 0.0075034014
+## 14     38H-2 0.046299213 0.0247346939
+## 15     44H-1 0.040944882 0.0224319728
+## 16     44H-2 0.037874016 0.0225510204
 ```
 
 ## Visualize
