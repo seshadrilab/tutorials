@@ -189,6 +189,9 @@ save_gs(gs, here::here("out/GatingSet"))
 A COMPASSContainer is the data structure used to hold data from an ICS experiment. The input for this code is a GatingSet or a GatingSetList. Counts, metadata, and 
 single cell data are extracted and fed into the COMPASSContainer constructor.
 ```R
+# Set the seed
+set.seed(123)
+
 # A regular expression to match a single node in the gating tree
 parent_node <- "CD4+"
 
