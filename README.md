@@ -35,3 +35,48 @@ BiocManager::install("COMPASS")
 3. Create a COMPASSContainer
 4. Run COMPASS
 5. Visualize
+
+## Load data
+```R
+library(here)
+library(CytoML)
+library(flowCore)
+library(flowWorkspace)
+library(COMPASS)
+```
+The .xml and .fcs files for this dataset are stored in the Seshadri Lab shared drive (LSR Fortessa/2021 Summer HAARVIVAC/20210902 HAARVIVAC Batch 4/).
+Download the .xml file and folder containing the .fcs files and drag into the "data" folder of this project directory.
+```R
+# Location of XML file
+xml_path <- here::here("data/20211014_HAARVIVAC_B4V3_JP.xml")
+
+# Location of .fcs files
+fcs_subfolder <- here::here("data/20210902_HAARVIVAC_FCS_B4/")
+```
+
+Create a flowjo_workspace object with the function open_flowjo_xml().
+```{r}
+ws <- open_flowjo_xml(xml_path)
+```
+
+## Create a GatingSet
+### Set-up
+A GatingSet holds a set of GatingHierarchy objects, representing a set of samples and the gating scheme associated with each.
+Look at the workspace metadata to choose which keywords to extract into the GatingSet. The flowjo_to_gatingset() function parses a flowJo Workspace to generate a GatingSet object.
+```R
+names(fj_ws_get_keywords(ws, 117)) 
+keywords2import <- c("EXPERIMENT NAME",
+                       "$DATE",
+                       "SAMPLE ID",
+                       "PATIENT ID",
+                       "Stim",
+                       "WELL ID",
+                       "PLATE NAME") 
+sampleGroup <- "Samples"
+
+gs <- flowjo_to_gatingset(ws,                                    
+                          name = sampleGroup, 
+                          keywords = keywords2import,
+                          path = fcs_subfolder, 
+                          extend_val = -10000)
+```
