@@ -172,7 +172,7 @@ Plot gating tree.
 ```R
 plot(gs, fontsize=15, bool=T)
 ```
-![image](https://user-images.githubusercontent.com/89667908/145896254-3514d2e1-69c0-45b9-9a2d-8132df67861f.png)
+![image](https://user-images.githubusercontent.com/89667908/145899923-a9269520-6f99-4e70-a170-6a2094fd7554.png)
 
 
 ### Save GatingSet
@@ -275,3 +275,9 @@ Plot a heatmap of the mean probability of response.
 ```R
 plot(fit, show_rownames = TRUE)
 ```
+```R
+## The 'threshold' filter has removed 8 categories:
+## IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&CD107a, IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&CD154&!CD107a
+```
+![image](https://user-images.githubusercontent.com/89667908/145899900-449a7b7f-0edc-48bf-8e1b-e3cf0ca97ef3.png)
+
