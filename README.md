@@ -20,6 +20,8 @@ The following R packages are required for this tutorial:
 To install the R packages, open an R session and enter the following command lines:
 ```R
 install.packages("BiocManager")
+BiocManager::install("flowCore")
+BiocManager::install("flowWorkspace")
 BiocManager::install("COMPASS")
 ```
 
