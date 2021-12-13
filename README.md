@@ -87,5 +87,100 @@ Make sure that the gating trees are consistent for all samples.
 pop_lists <- lapply(gs, gh_get_pop_paths)
 unique(pop_lists)
 ```
-
 Remove channels from flow data that are not used by gates.
+```R
+gs <- gs_remove_redundant_channels(gs) # drop SSC-H, V655-A, V570-A
+```
+Add names to all channels or fix their names.
+```R
+dput(unname(pData(parameters(gh_pop_get_data(gs[[1]])))[,2]))
+markernames <- c("Time", "FSC-A", "FSC-H", "SSC-A", "CD8b", "TNFa", "CD107a",
+                 "CD154", "CD3", "IL2", "CD4", "IL17a", "IL4_5_13", "CD14_19",
+                 "CCR7", "CD38", "LD", "IFNg", "CD45RA", "HLADR")
+names(markernames) <- pData(parameters(gh_pop_get_data(gs[[1]])))[,1]
+markernames(gs) <- markernames
+pData(parameters(gh_pop_get_data(gs[[1]])))[,c(1,2)]
+```
+Plot gating tree.
+```R
+plot(gs, fontsize=15, bool=T)
+```
+
+### Save GatingSet
+This can take a while.
+```R
+if(!dir.exists(here::here("out/GatingSet"))) {
+  cat(sprintf("Creating folder %s\n", here::here("out/GatingSet")))
+  dir.create(here::here("out/GatingSet"), recursive = T)
+}
+save_gs(gs, here::here("out/GatingSet"))
+```
+
+## Create a COMPASSContainer
+A COMPASSContainer is the data structure used to hold data from an ICS experiment. The input for this code is a GatingSet or a GatingSetList. Counts, metadata, and 
+single cell data are extracted and fed into the COMPASSContainer constructor.
+```R
+# A regular expression to match a single node in the gating tree
+parent_node <- "CD4+"
+
+# A character identifying the subject id column in the GatingSet metadata
+id <- "SAMPLE ID"
+
+# markermap contains the output of markernames(gs)
+markernames(gs) 
+markermap <- list("IL2", "IL4_5_13", "IFNg", "TNFa", "IL17a", "CD154", "CD107a")
+names(markermap) <- paste0(parent_node, "/", c("IL2+", "IL4_5_13+", "IFNg+",
+                                               "TNFa+", "IL17a+", "CD154+", 
+                                               "CD107a+"))
+```
+Construct the COMPASSContainer.
+```R
+CC <- COMPASSContainerFromGatingSet(gs,
+                                    node = parent_node,
+                                    individual_id = id,
+                                    mp = markermap,
+                                    countFilterThreshold = 5000)
+```
+Look at some basic info about our COMPASSContainer.
+```R
+CC
+```
+
+## Run COMPASS
+Fit the COMPASS model using the COMPASSContainer. To fit the COMPASS model, we need to specify how to identify the samples that are our treatment condition and our control condition. Here, we will run COMPASS on the samples stimmed by spike 1 with DMSO as our negative control. For now, let's just do 100 iterations for speed.
+```R
+fit <- COMPASS(CC,
+               treatment = Stim == "S1",
+               control = Stim == "DMSO",
+               iterations = 100)
+```
+Save the COMPASS run output.
+```R
+if(!dir.exists(here::here("out/COMPASSResult"))) {
+  cat(sprintf("Creating folder %s\n", here::here("out/COMPASSResult")))
+  dir.create(here::here("out/COMPASSResult"), recursive = T)
+}
+saveRDS(fit, file.path("out/COMPASSResult", "COMPASSResult.rds"))
+```
+Save the Functionality and Polyfunctionality Scores.
+```R
+FS <- FunctionalityScore(fit)
+FS_df <- data.frame(tmp = names(FS), FS = FS)
+colnames(FS_df) <- c("SAMPLE ID", "FS")
+
+PFS <- PolyfunctionalityScore(fit)
+PFS_df <- data.frame(tmp = names(PFS), PFS = PFS)
+colnames(PFS_df) <- c("SAMPLE ID", "PFS")
+
+FS_PFS_df <- merge(FS_df, PFS_df, by = "SAMPLE ID")
+write.table(FS_PFS_df,
+            file = file.path("out/COMPASSResult", "FS_PFS.tsv"),
+            sep = "\t", row.names = FALSE, quote = FALSE)
+FS_PFS_df
+```
+
+## Visualize
+Plot a heatmap of the mean probability of response.
+```R
+plot(fit, show_rownames = TRUE)
+```
