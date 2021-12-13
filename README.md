@@ -131,12 +131,42 @@ gs <- gs_remove_redundant_channels(gs)
 Add names to all channels or fix their names.
 ```R
 dput(unname(pData(parameters(gh_pop_get_data(gs[[1]])))[,2]))
+```
+```R
+## structure(c(NA, NA, NA, NA, "CD8b", "TNFa", "CD107a", "CD154", 
+## "CD3", "IL2", "CD4", "IL17a", "IL4_5_13", "CD14_19", "CCR7", 
+## "CD38", "LD", "INFg", "CD45RA", "HLADR"), class = "AsIs")
+```
+```R
 markernames <- c("Time", "FSC-A", "FSC-H", "SSC-A", "CD8b", "TNFa", "CD107a",
                  "CD154", "CD3", "IL2", "CD4", "IL17a", "IL4_5_13", "CD14_19",
                  "CCR7", "CD38", "LD", "IFNg", "CD45RA", "HLADR")
 names(markernames) <- pData(parameters(gh_pop_get_data(gs[[1]])))[,1]
 markernames(gs) <- markernames
 pData(parameters(gh_pop_get_data(gs[[1]])))[,c(1,2)]
+```
+```R
+##          name     desc
+## $P1      Time     Time
+## $P2     FSC-A    FSC-A
+## $P3     FSC-H    FSC-H
+## $P4     SSC-A    SSC-A
+## $P6  <B710-A>     CD8b
+## $P7  <B515-A>     TNFa
+## $P8  <G780-A>   CD107a
+## $P9  <G660-A>    CD154
+## $P10 <G610-A>      CD3
+## $P11 <G575-A>      IL2
+## $P12 <R780-A>      CD4
+## $P13 <R710-A>    IL17a
+## $P14 <R660-A> IL4_5_13
+## $P15 <V780-A>  CD14_19
+## $P16 <V710-A>     CCR7
+## $P18 <V610-A>     CD38
+## $P20 <V510-A>       LD
+## $P21 <V450-A>     IFNg
+## $P22 <U730-A>   CD45RA
+## $P23 <U395-A>    HLADR
 ```
 Plot gating tree.
 ```R
