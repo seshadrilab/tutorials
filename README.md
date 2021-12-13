@@ -123,7 +123,10 @@ unique(pop_lists)
 ```
 Remove channels from flow data that are not used by gates.
 ```R
-gs <- gs_remove_redundant_channels(gs) # drop SSC-H, V655-A, V570-A
+gs <- gs_remove_redundant_channels(gs) 
+```
+```R
+## drop SSC-H, V655-A, V570-A
 ```
 Add names to all channels or fix their names.
 ```R
