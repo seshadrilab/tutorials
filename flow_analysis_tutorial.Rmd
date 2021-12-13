@@ -3,9 +3,6 @@ title: "Flow Analysis Tutorial"
 author: "Jolie Phan"
 date: "version `r format(Sys.time(), '%B %d, %Y')`"
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: 4
   html_document:
     toc: yes
     toc_depth: 4
@@ -109,7 +106,7 @@ pData(parameters(gh_pop_get_data(gs[[1]])))[,c(1,2)]
 
 Plot gating tree.
 
-```{r, fig.width = 8, fig.height = 6}
+```{r, fig.width = 6, fig.height = 4}
 plot(gs, fontsize=15, bool=T)
 ```
 
@@ -132,6 +129,9 @@ The input for this code is a GatingSet or a GatingSetList. Counts, metadata, and
 single cell data are extracted and fed into the COMPASSContainer constructor.
 
 ```{r}
+# Set the seed
+set.seed(123)
+
 # A regular expression to match a single node in the gating tree
 parent_node <- "CD4+"
 
@@ -202,12 +202,13 @@ FS_PFS_df <- merge(FS_df, PFS_df, by = "SAMPLE ID")
 write.table(FS_PFS_df,
             file = file.path("out/COMPASSResult", "FS_PFS.tsv"),
             sep = "\t", row.names = FALSE, quote = FALSE)
+FS_PFS_df
 ```
 
 # Visualize
 
 Plot a heatmap of the mean probability of response.
 
-```{r, fig.width = 8, fig.height = 10}
+```{r, fig.width = 6, fig.height = 4}
 plot(fit, show_rownames = TRUE)
 ```
