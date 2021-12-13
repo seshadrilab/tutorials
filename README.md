@@ -26,7 +26,7 @@ BiocManager::install("COMPASS")
 ```
 
 # Workflow Overview
-1. Load workspace
+1. Load data
 2. Create a GatingSet
 3. Create a COMPASSContainer
 4. Run COMPASS
