@@ -105,6 +105,8 @@ Plot gating tree.
 ```R
 plot(gs, fontsize=15, bool=T)
 ```
+![image](https://user-images.githubusercontent.com/89667908/145896254-3514d2e1-69c0-45b9-9a2d-8132df67861f.png)
+
 
 ### Save GatingSet
 This can take a while.
