@@ -133,7 +133,7 @@ names(markermap) <- paste0(parent_node, "/", c("IL2+", "IL4_5_13+", "IFNg+",
                                                "TNFa+", "IL17a+", "CD154+", 
                                                "CD107a+"))
 ```
-Construct the COMPASSContainer.
+Construct the COMPASSContainer. If the number of parent cells is less than countFilterThreshold, we drop that file (default is 5000 cells).
 ```R
 CC <- COMPASSContainerFromGatingSet(gs,
                                     node = parent_node,
