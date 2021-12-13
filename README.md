@@ -13,7 +13,8 @@ For this tutorial, we will be analyzing a batch of data from the HAARVI cohort. 
 # Installation
 
 The following R packages are required for this tutorial:
-* [flowCore](	https://bioconductor.org/packages/flowCore/)
+* [CytoML](https://bioconductor.org/packages/CytoML/)
+* [flowCore](https://bioconductor.org/packages/flowCore/)
 * [flowWorkspace](https://bioconductor.org/packages/flowWorkspace/)
 * [COMPASS](https://bioconductor.org/packages/COMPASS/)
 
