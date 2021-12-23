@@ -1,0 +1,511 @@
+---
+title: "Seshadri Lab tSNE Tutorial"
+author: "Nathan Kieswetter"
+date: "12/21/2021"
+output: html_document
+---
+# Introduction
+
+t-distributed stochastic neighbor embedding (t-SNE) is a non-linear dimensionality reduction statistical analysis useful for assessing high-dimensional data. This is achieved by giving each data point withing a data set a position in a 2 or 3 dimensional map. Specifically, it models each high-dimensional object by a two- or three-dimensional point in such a way that similar objects are modeled by nearby points and dissimilar objects are modeled by distant points with high probability. In flow cytometry, t-SNE analyses are useful for segregating and identifying unique cellular porpulations based on their surface protein expression as well as the cytokines or chemokines being secreted by specific subsets.
+
+For this tutorial, we will be analyzing a batch of data from the HAARVI cohort. The aim of this tutorial is to enable you to read in, QC, analyse, and visualize surface staining and intracellular staining cell data from a flow cytometry experiment.
+
+NOTE: If you have successfully completed the COMPASS tutorial, the same saved gating set can be used allowing you to skip the initial reading-in and QC of the raw FACS files.
+
+# Installation
+
+The following R packages are required for this tutorial:
+-here
+-flowCore
+-flowWorkspace
+-openCyto
+-CytoML
+-tidyverse
+
+To install the R packages, open an R session and enter the following command lines:
+
+```{r eval=, warning=FALSE, include=FALSE}
+install.packages("Rtsne")
+install.packages("devtools")
+install.packages("tidyverse")
+install.packages("scales")
+install.packages("patchwork")
+install.packages("hues")
+install.packages("RColorBrewer")
+install.packages("tidyselect")
+install.packages("ggrastr")
+install.packages("here")
+install.packages("BiocManager")
+BiocManager::install("CytoML")
+BiocManager::install("flowCore")
+BiocManager::install("flowWorkspace")
+```
+
+# Load in the Appropriate Libaries
+
+```{r results ='hide', message = FALSE, results = FALSE, warning = FALSE}
+library(here)
+library(flowCore)
+library(flowWorkspace)
+library(openCyto)
+library(CytoML) 
+library(tidyverse)
+library(Rtsne)
+library(devtools)
+library(scales)
+library(patchwork)
+library(hues)
+library(RColorBrewer)
+library(tidyselect)
+library(ggrastr)
+theme_set(theme_bw(18))
+```
+
+# Load in the Data
+
+```{r}
+date <- 20211220
+### Location of XML file
+xml_path <- here::here("data/20211014_HAARVIVAC_B4V3_JP.xml")
+
+### Location of .fcs files
+fcs_subfolder <- here::here("data/20210902_HAARVIVAC_FCS_B4/")
+```
+
+Create a flowjo_workspace object with the function open_flowjo_xml().
+
+```{r}
+ws <- CytoML::open_flowjo_xml(xml_path)
+```
+
+The .xml and .fcs files for this dataset are stored in the Seshadri Lab shared drive (LSR Fortessa/2021 Summer HAARVIVAC/20210902 HAARVIVAC Batch 4/). Download the .xml file and folder containing the .fcs files and drag into the "data" folder of this project directory.
+
+# Create a GatingSet
+### Set-up
+
+A GatingSet holds a set of GatingHierarchy objects, representing a set of samples and the gating scheme associated with each. Look at the workspace metadata to choose which keywords to extract into the GatingSet. The flowjo_to_gatingset() function parses a flowJo Workspace to generate a GatingSet object.
+
+```{r}
+names(fj_ws_get_keywords(ws, 117)) 
+```
+
+Select the keywords of interest; i.e., those which contain useful information.
+
+```{r}
+keywords2import <- c("EXPERIMENT NAME",
+                     "$DATE",
+                     "SAMPLE ID",
+                     "PATIENT ID",
+                     "Stim",
+                     "WELL ID",
+                     "PLATE NAME") 
+sampleGroup <- "Samples"
+```
+
+Create the gatingset.
+
+```{r}
+gs <- flowjo_to_gatingset(ws,                                    
+                          name = sampleGroup, 
+                          keywords = keywords2import,
+                          path = fcs_subfolder, 
+                          extend_val = -10000)
+```
+
+### Quality Control (QC)
+
+Make sure that the gating trees are consistent for all samples.
+
+```{r}
+pop_lists <- lapply(gs, gh_get_pop_paths)
+unique(pop_lists)
+```
+
+Remove channels from flow data that are not used by gates.
+
+```{r}
+gs <- gs_remove_redundant_channels(gs) 
+```
+
+Add or fix all channel names.
+
+```{r}
+
+dput(unname(pData(parameters(gh_pop_get_data(gs[[1]])))[,2]))
+
+markernames <- c("Time", "FSC-A", "FSC-H", "SSC-A", "CD8b", "TNFa", "CD107a",
+                 "CD154", "CD3", "IL2", "CD4", "IL17a", "IL4_5_13", "CD14_19",
+                 "CCR7", "CD38", "LD", "IFNg", "CD45RA", "HLADR")
+
+names(markernames) <- pData(parameters(gh_pop_get_data(gs[[1]])))[,1]
+
+markernames(gs) <- markernames
+
+pData(parameters(gh_pop_get_data(gs[[1]])))[,c(1,2)]
+```
+
+Plot the gating tree. Make sure there are no errant nodes etc.
+
+```{r}
+plot(gs, fontsize=15, bool=T)
+```
+
+### Save the gatingset
+
+Note, this can take a while.
+
+```{r include = TRUE, eval = FALSE}
+if(!dir.exists(here::here("out/GatingSet"))) {
+  cat(sprintf("Creating folder %s\n", here::here("out/GatingSet")))
+  dir.create(here::here("out/GatingSet"), recursive = T)
+}
+save_gs(gs, here::here("out/GatingSet"))
+
+```
+
+
+
+# Preparation of Data for t-SNE 
+
+With the data read-in, QC'ed and converted into a gatingset, it is time to extract the data required for downstream t-SNE.
+
+### Define the populations from which you like to extract their counts 
+
+These populations can be pulled up using: dput(gh_get_pop_paths(gs))
+
+```{r}
+pops2extract <- c("/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CCR7+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD45RA+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD107a+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD154+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IFNg+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL2+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL4_5_13+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL17a+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/TNFa+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CCR7+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD45RA+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD107a+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD154+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IFNg+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL2+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL4_5_13+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL17a+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/TNFa+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD38+", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/DN", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/DP", 
+                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/HLADR+")
+```
+
+### Extract the Counts
+
+The following chunk of code extracts the count data for the populations defined above. Additionally, it renames the populations of interest for easier visualization of the raw data within a given data frame or table. Use dplyr::select() to define useful columns for your analyses. These should include columns containing patient identifiers, treatments, etc. 
+
+```{r}
+pop_counts <- gs_pop_get_count_with_meta(gs, subpopulations = pops2extract) %>%
+  dplyr::select(`PATIENT ID`, Stim, sampleName, Population, Count) %>%
+  mutate(Population = gsub(".*Lymphocytes\\/", "", Population)) %>%
+  mutate(Population = recode(Population,
+                             "Singlet/Live" = "T_cells", 
+                             "Singlet/Live/CD4+" = "CD4", 
+                             "Singlet/Live/CD4+/CCR7+" = "CD4_CCR7", 
+                             "Singlet/Live/CD4+/CD45RA+" = "CD4_CD45RA", 
+                             "Singlet/Live/CD4+/CD107a+"= "CD4_CD107", 
+                             "Singlet/Live/CD4+/CD154+" = "CD4_CD154", 
+                             "Singlet/Live/CD4+/IFNg+" = "CD4_IFNy", 
+                             "Singlet/Live/CD4+/IL2+" = "CD4_IL2", 
+                             "Singlet/Live/CD4+/IL4_5_13+" = "CD4_IL4_5_13", 
+                             "Singlet/Live/CD4+/IL17a+" = "CD4_IL17", 
+                             "Singlet/Live/CD4+/TNFa+" = "CD4_TNFa", 
+                             "Singlet/Live/CD8+" = "CD8", 
+                             "Singlet/Live/CD8+/CCR7+" = "CD8_CCR7", 
+                             "Singlet/Live/CD8+/CD45RA+" = "CD8_CD45RA", 
+                             "Singlet/Live/CD8+/CD107a+" = "CD8_CD107a", 
+                             "Singlet/Live/CD8+/CD154+" = "CD8_CD154", 
+                             "Singlet/Live/CD8+/IFNg+" = "CD8_IFNg", 
+                             "Singlet/Live/CD8+/IL2+" = "CD8_IL2", 
+                             "Singlet/Live/CD8+/IL4_5_13+" = "CD8_IL4_5_13", 
+                             "Singlet/Live/CD8+/IL17a+" = "CD8_IL17", 
+                             "Singlet/Live/CD8+/TNFa+"= "CD8_TNF", 
+                             "Singlet/Live/CD38+"= "CD38_pos", 
+                             "Singlet/Live/DN" = "DN", 
+                             "Singlet/Live/DP" = "DP", 
+                             "Singlet/Live/HLADR+" = "HLADR_pos")) %>% 
+  pivot_wider(id_cols = c(`PATIENT ID`, Stim, sampleName),
+              names_from = Population,
+              values_from = Count)
+```
+
+These data can (and should) be saved for quick analysis later on.
+
+### Sample the Data
+
+In some instances, it may be prudent to sample your data so that each condition (i.e. "Stim"ulation) has an equal number of cells or observations. This can prevent potential bias; however, it may not be necessary for all analyses. Here, the CD4 cell population was selected and each "Stim" sampled 5000 times (i.e. 5000 cells per "Stim" per patient).
+
+Below is a custom function which randomly samples sub-groups and distribute these data for downstream analyses. 
+```{r results ='hide', message = FALSE, results = FALSE}
+distributeEvents <- function(totalEvents, subGroupSizes) {
+  if(totalEvents == 0) {
+    rep(0, length(subGroupSizes))
+  } else if(sum(subGroupSizes) < totalEvents) {
+    stop("Not enough events to achieve requested sample size")
+  } else if(any(subGroupSizes == 0)) {
+    output <- rep(0, length(subGroupSizes))
+    nonZeroIndices <- which(subGroupSizes > 0)
+    output[nonZeroIndices] <- distributeEvents(totalEvents, subGroupSizes[nonZeroIndices])
+  } else {
+    numSubGroups <- length(subGroupSizes)
+    total_div_numSubGroups <- totalEvents %/% numSubGroups
+    remainder <- totalEvents %% numSubGroups
+    minGroupSize <- min(subGroupSizes)
+    
+    if(total_div_numSubGroups == 0) {
+      stopifnot(remainder != 0)
+      stopifnot(all(subGroupSizes > 0))
+      stopifnot(remainder < numSubGroups)
+      output <- rep(0, numSubGroups)
+      output[sample.int(numSubGroups, remainder)] <- 1
+      output
+    } else {
+      howMuchToAssign <- min(total_div_numSubGroups, minGroupSize)
+      output <- rep(howMuchToAssign, numSubGroups)
+  
+      remaining_subGroupSizes <- subGroupSizes - howMuchToAssign
+      nonZeroIndices <- which(remaining_subGroupSizes > 0)
+      if(length(nonZeroIndices)) {
+        toAdd <- rep(0, numSubGroups)
+        toAdd[nonZeroIndices] <- distributeEvents(totalEvents - sum(output), remaining_subGroupSizes[nonZeroIndices])
+        output + toAdd
+      } else {
+        output
+      }
+    }
+  }
+}
+```
+
+Sample the CD4 data by "Stim"
+
+```{r}
+cd4_tsne_sample_sizes <- pop_counts %>% 
+  dplyr::select(`PATIENT ID`, Stim, sampleName, CD4) %>% 
+  group_by(Stim) %>% 
+  nest() %>% 
+  ungroup() %>% 
+  mutate(nsamp = map2(5000, data, function(totalEvents, df) {
+    distributeEvents(totalEvents, df$CD4)
+  })) %>% 
+  unnest(cols = c(data, nsamp))
+
+cd4_tsne_sample_sizes %>% 
+  group_by(Stim) %>% 
+  summarise(nsamp_sum = sum(nsamp)) %>% 
+  dplyr::pull(nsamp_sum) %>% 
+  unique()
+```
+
+### Create a data matrix to input into t-SNE
+
+First, define the gates that you like to include in the matrix and include them in a new object. These data can be viewed and selected using the gh_get_pop_paths() function.
+
+```{r}
+
+dput(gh_get_pop_paths(gs))
+
+gates_to_extract_membership <- c("/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CCR7+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD45RA+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD107a+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD154+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IFNg+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL2+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL4_5_13+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL17a+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/TNFa+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CCR7+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD45RA+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD107a+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD154+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IFNg+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL2+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL4_5_13+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL17a+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/TNFa+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD38+", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/DN", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/DP", 
+                                 "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/HLADR+")
+```
+
+Next, assess whether the defined populations (gates_to_extract_membership) exist in the gating set. This is a useful QC step at this stage of the analysis. The result should be returned as TRUE.
+
+```{r}
+all(gates_to_extract_membership %in% intersect(gh_get_pop_paths(gs), gh_get_pop_paths(gs)))
+```
+
+Prepare the matrix for the sampled CD4 cells. Is is important to define the parent gate for the chunk of code below (i.e. "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+").
+
+Below is a custom function to sample n events from a GatingHierarchy containing a single sample.
+
+```{r results ='hide', message = FALSE, results = FALSE}
+sampleGatingHierarchy <- function(gh, parentGate, n, otherGates = NULL) {
+  stopifnot(length(gh) == 1)
+  allMarkerNames <- pData(parameters(gh_pop_get_data(gh)))[,c(1,2)]
+  if (any(is.na(allMarkerNames[,2])) | length(unique(allMarkerNames[,2])) < length(allMarkerNames[,2]))
+    stop ("all marker names (even FSC-A and Time) must be assigned and be unique")
+  availableEvents <- gh_pop_get_count(gh, parentGate)
+  nSampled <- sample.int(availableEvents, size = n)
+  parentGateIndices <- gh_pop_get_indices(gh, parentGate)
+  gates2Extract <- unique(c(parentGate, if(is.null(otherGates)) {gh_get_pop_paths(gh)} else {otherGates}))
+  perCellGateMembership <- data.frame(lapply(gates2Extract, function(currentGate) {
+    as.integer(gh_pop_get_indices_mat(gh, currentGate)[parentGateIndices,][nSampled]) }))
+  colnames(perCellGateMembership) <- gates2Extract
+  perCellMFIData <- exprs(gh_pop_get_data(gh, parentGate))[nSampled,]
+  colnames(perCellMFIData) <- allMarkerNames[match(colnames(perCellMFIData), allMarkerNames[,1]), 2]
+  stopifnot(nrow(perCellGateMembership) == nrow(perCellMFIData))
+  gateAndMFIData <- cbind(perCellGateMembership, perCellMFIData)
+  cbind(pData(gh), gateAndMFIData, row.names = NULL)
+}
+
+```
+
+Extract the CD4 specific data and input it into the matrix.
+
+```{r}
+cd4_data4dimred <- map2_dfr(cd4_tsne_sample_sizes$sampleName, cd4_tsne_sample_sizes$nsamp,
+                            function(currentSampleName, currentSampleSize) {
+                              # print(sprintf("Sampling data from %s", currentSampleName))
+                              sampleGatingHierarchy(gs[[currentSampleName]],
+                                                    "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+",
+                                                    currentSampleSize,
+                                                    gates_to_extract_membership)
+                            })
+dim(cd4_data4dimred)
+cd4_data4dimred[1:4,]
+```
+
+## Scale the data and apend it to the CD4 matrix
+
+Scaling centers and/or scales the columns of a numeric matrix by the normalization of a dataset using the mean value and standard deviation and is a standard step in all
+
+```{r}
+pData(parameters(gh_pop_get_data(gs[[1]])))[,c(1,2)] 
+
+dimred_input_cols <- c("FSC-A", "FSC-H", "SSC-A", "CD8b", "TNFa", "CD107a", 
+                       "CD154", "CD3", "IL2", "CD4", "IL17a", "IL4_5_13", 
+                       "CD14_19", "CCR7", "CD38", "LD", "IFNg", "CD45RA", 
+                       "HLADR")
+
+#CD4 Scaled Data for rTSNE
+cd4_data_scaled <- cd4_data4dimred %>% 
+  dplyr::select(all_of(dimred_input_cols)) %>% 
+  as.matrix() %>% 
+  scale() %>% 
+  as.data.frame() %>% 
+  rename_at(vars(all_of(dimred_input_cols)),function(x) paste0(x,".scaled"))
+
+cd4_data4dimred_scaled <- bind_cols(cd4_data4dimred, cd4_data_scaled)
+```
+
+# Run t-SNE
+
+The following steps may take significant amount of time depending on the the number of variables, computational power, and number of cells sampled. Further, the number of iterations can also be altered.
+
+
+### Set the seed
+
+A seed is a necessary numerical marker used by t-SNE analyeses to ensure reproducibility. If not defined, the t-SNE output may vary from run to run.Below we have used the date on which the following tutorial was created; however, this can be any value you want.  
+```{r}
+set.seed(date)
+```
+Define the common markers that are present in all the populations you which to assess.
+```{r}
+common_tsne_cols <- c("CD3", "CD4", "CD8b", 
+                      "CD38", "CD4", "HLADR", 
+                      "CD45RA")
+```
+
+Define the marker (ICS or SS) that you would like to include into the t-SNE analysis, and run:
+```{r}
+print(Sys.time())
+CD4_tsne_out <- cd4_data4dimred_scaled %>%
+  dplyr::select(all_of(paste0(c(common_tsne_cols, "TNFa", "CD107a", "CD154", "IL2", 
+                                                  "IL17a", "IL4_5_13","CCR7", "CD38", 
+                                                  "IFNg", "CD45RA", "HLADR"), ".scaled"))) %>% 
+  Rtsne::Rtsne(check_duplicates = FALSE)
+```
+
+Append the t-SNE data to your original matrix and save this file.
+
+```{r}
+cd4_tsne_and_data_scaled <- cbind(as.data.frame(CD4_tsne_out$Y) %>% 
+                                    dplyr::rename(x.tsne = V1, y.tsne = V2),
+                                  cd4_data4dimred)
+```
+
+# Basic plotting
+
+The following code will plot the t-SNE data in two dimensions. Facet_grid() is a useful function for stratifying your data by treatment (i.e. "Stim").
+
+```{r}
+cd4_tsne_and_data_scaled %>%
+  ggplot(aes(x = x.tsne, 
+             y = y.tsne,
+             color = Stim)
+  ) +
+  geom_point() +
+  theme(legend.position="FALSE") +
+  facet_grid(vars(Stim))
+```
+
+# Advanced Plotting
+
+It is interesting to overlay ICS or SS data onto the t-SNE plot we generated above.The following chunk of code defines a set theme from which the proceeding plots are generated. This can be easily altered to your individual needs.
+
+
+```{r}
+myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
+
+pointSize <- 0.002
+
+run_tmp <- cd4_tsne_and_data_scaled
+
+gg_themes <- ggplot(run_tmp, aes(x = x.tsne, y = y.tsne)) +
+  scale_x_continuous(limits = range(run_tmp$x.tsne)*1.01) +                   
+  scale_y_continuous(limits = range(run_tmp$y.tsne)*1.01) +                     
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5, size=22, face="bold"),
+        axis.text = element_blank(),
+        axis.line = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.margin = margin(1, 0, 0, 0, unit = "pt"),
+        strip.text = element_text(size=12))
+```
+
+Below, is an example whereby TNFa expression is overlaid onto the CD4 t-SNE data and then stratified (as.factor(x)) by stimulation condition.
+
+Specific populations can be easily called using  dput(gh_get_pop_paths(gs))
+```{r}
+TNFa_plot <- gg_themes +
+  geom_point(aes(color=as.factor(`/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/TNFa+`)),
+             shape=20, alpha=0.9, size=pointSize, show.legend = FALSE) +
+  scale_color_manual(values = c("0" = "#E2E2E2", "1" = "#023FA5")) +
+  theme(legend.position = NULL) +
+  guides(colour = guide_legend(override.aes = list(size=9))) +
+  ggtitle("TNFa") +
+  labs(color = "TNFa")+
+  facet_grid(vars(Stim))
+
+TNFa_plot
+```
+
+
+
