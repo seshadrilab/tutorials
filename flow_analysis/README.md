@@ -12,7 +12,7 @@ For this tutorial, we will be analyzing a batch of data from the HAARVI cohort. 
 
 # Installation
 
-The following R packages are required for this tutorial:
+This pipeline should be completed in R and RStudio. The following R packages are required for this tutorial:
 * [here](https://cran.r-project.org/package=here) (not necessary but makes file referencing easier)
 * [CytoML](https://bioconductor.org/packages/CytoML/)
 * [flowCore](https://bioconductor.org/packages/flowCore/)
@@ -28,6 +28,28 @@ BiocManager::install("flowCore")
 BiocManager::install("flowWorkspace")
 BiocManager::install("COMPASS")
 ```
+# Directory Structure
+To directly use the code in this tutorial, you should create an RStudio project and set up your project directory as follows. The `data/` folder should contain all `.xml` and `.fcs` files and the `out/` folder will contain the GatingSet all COMPASS outputs.
+![image](https://user-images.githubusercontent.com/89667908/147301852-f5c1d505-cb04-4841-bdbe-981b0d4bc6f9.png)
+You can achieve this directory structure by running the following command lines:
+```R
+if(!dir.exists(here::here("data"))) {
+  cat(sprintf("Creating folder %s\n", here::here("data")))
+  dir.create(here::here("data"), recursive = T)
+}
+if(!dir.exists(here::here("out"))) {
+  cat(sprintf("Creating folder %s\n", here::here("out")))
+  dir.create(here::here("out"), recursive = T)
+}
+if(!dir.exists(here::here("out/GatingSet"))) {
+  cat(sprintf("Creating folder %s\n", here::here("out/GatingSet")))
+  dir.create(here::here("out/GatingSet"), recursive = T)
+}
+if(!dir.exists(here::here("out/COMPASSResult"))) {
+  cat(sprintf("Creating folder %s\n", here::here("out/COMPASSResult")))
+  dir.create(here::here("out/COMPASSResult"), recursive = T)
+}
+```
 
 # Workflow Overview
 1. Load data
@@ -38,6 +60,7 @@ BiocManager::install("COMPASS")
 
 ## Load data
 ```R
+# Load libraries into your current R session
 library(here)
 library(CytoML)
 library(flowCore)
@@ -45,7 +68,10 @@ library(flowWorkspace)
 library(COMPASS)
 ```
 The .xml and .fcs files for this dataset are stored in the Seshadri Lab shared drive (LSR Fortessa/2021 Summer HAARVIVAC/20210902 HAARVIVAC Batch 4/).
-Download the .xml file and folder containing the .fcs files and drag into the "data" folder of this project directory.
+Download the .xml file and folder containing the associated .fcs files and drag them into the "data" folder of the project directory.
+
+This data has been gated in FlowJo v9 and will be parsed using flowWorkspace.
+**FYI:** *When using FlowJo v9, the FlowJo workspace must be exported as an .xml file to create a flowjo_workspace object with the function open_flowjo_xml(). However, when using FlowJo v10, the FlowJo workspace can be loaded directly as a .wsp file using the same function open_flow_xml().*
 ```R
 # Location of XML file
 xml_path <- here::here("data/20211014_HAARVIVAC_B4V3_JP.xml")
@@ -81,7 +107,7 @@ gs <- flowjo_to_gatingset(ws,
                           extend_val = -10000)
 ```
 
-### QC
+### Quality Control (QC)
 Make sure that the gating trees are consistent for all samples.
 ```R
 pop_lists <- lapply(gs, gh_get_pop_paths)
@@ -176,12 +202,8 @@ plot(gs, fontsize=15, bool=T)
 
 
 ### Save GatingSet
-This can take a while.
+**Note:** this can take a while.
 ```R
-if(!dir.exists(here::here("out/GatingSet"))) {
-  cat(sprintf("Creating folder %s\n", here::here("out/GatingSet")))
-  dir.create(here::here("out/GatingSet"), recursive = T)
-}
 save_gs(gs, here::here("out/GatingSet"))
 ```
 
@@ -231,10 +253,6 @@ fit <- COMPASS(CC,
 ```
 Save the COMPASS run output.
 ```R
-if(!dir.exists(here::here("out/COMPASSResult"))) {
-  cat(sprintf("Creating folder %s\n", here::here("out/COMPASSResult")))
-  dir.create(here::here("out/COMPASSResult"), recursive = T)
-}
 saveRDS(fit, file.path("out/COMPASSResult", "COMPASSResult.rds"))
 ```
 Save the Functionality and Polyfunctionality Scores.
