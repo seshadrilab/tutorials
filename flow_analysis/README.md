@@ -205,7 +205,7 @@ plot(gs, fontsize=15, bool=T)
 ### Save GatingSet
 **Note:** this can take a while.
 ```R
-save_gs(gs, here::here("out/GatingSet"))
+save_gs(gs, here::here("out/GatingSet"), overwrite = TRUE)
 ```
 
 ## Create a COMPASSContainer
@@ -254,7 +254,7 @@ fit <- COMPASS(CC,
 ```
 Save the COMPASS run output.
 ```R
-saveRDS(fit, file.path("out/COMPASSResult", "COMPASSResult.rds"))
+saveRDS(fit, file.path(here::here("out/COMPASSResult"), "COMPASSResult.rds"))
 ```
 Save the Functionality and Polyfunctionality Scores.
 ```R
@@ -268,7 +268,7 @@ colnames(PFS_df) <- c("SAMPLE ID", "PFS")
 
 FS_PFS_df <- merge(FS_df, PFS_df, by = "SAMPLE ID")
 write.table(FS_PFS_df,
-            file = file.path("out/COMPASSResult", "FS_PFS.tsv"),
+            file = file.path(here::here("out/COMPASSResult"), "FS_PFS.tsv"),
             sep = "\t", row.names = FALSE, quote = FALSE)
 FS_PFS_df
 ```
