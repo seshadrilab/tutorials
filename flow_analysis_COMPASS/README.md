@@ -72,7 +72,8 @@ The .xml and .fcs files for this dataset are stored in the Seshadri Lab shared d
 Download the .xml file and folder containing the associated .fcs files and drag them into the "data" folder of the project directory.
 
 This data has been gated in FlowJo v9 and will be parsed using flowWorkspace.
-***FYI:*** *When using FlowJo v9, the FlowJo workspace must be exported as an .xml file to create a flowjo_workspace object with the function open_flowjo_xml(). However, when using FlowJo v10, the FlowJo workspace can be loaded directly as a .wsp file using the same function open_flow_xml().*
+
+**FYI:** When using FlowJo v9, the FlowJo workspace must be exported as an .xml file to create a flowjo_workspace object with the function open_flowjo_xml(). However, when using FlowJo v10, the FlowJo workspace can be loaded directly as a .wsp file using the same function open_flow_xml().
 ```R
 # Location of XML file
 xml_path <- here::here("data/20211014_HAARVIVAC_B4V3_JP.xml")
