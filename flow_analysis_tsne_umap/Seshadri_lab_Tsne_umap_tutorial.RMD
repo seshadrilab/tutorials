@@ -6,11 +6,13 @@ output: html_document
 ---
 # Introduction
 
-t-distributed stochastic neighbor embedding (t-SNE) is a non-linear dimensionality reduction statistical analysis useful for assessing high-dimensional data. This is achieved by giving each data point withing a data set a position in a 2 or 3 dimensional map. Specifically, it models each high-dimensional object by a two- or three-dimensional point in such a way that similar objects are modeled by nearby points and dissimilar objects are modeled by distant points with high probability. In flow cytometry, t-SNE analyses are useful for segregating and identifying unique cellular porpulations based on their surface protein expression as well as the cytokines or chemokines being secreted by specific subsets.
+[t-distributed stochastic neighbor embedding (t-SNE)](https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf) is a non-linear dimensionality reduction statistical analysis useful for assessing high-dimensional data. Specifically, it models each high-dimensional object by a two- or three-dimensional point in such a way that similar objects are modeled by nearby points and dissimilar objects are modeled by distant points with high probability. Similarly, [Uniform Manifold Approximation and Projection (UMAP)](https://umap-learn.readthedocs.io/en/latest/) is another more novel dimensionality reduction technique. Whilst competitive with t-SNE, UMAP is claimed to better preserve the global structure of the data and is less computationally intensive. For a more detailed comparison of two techniques, we recommend this [article](https://towardsdatascience.com/tsne-vs-umap-global-structure-4d8045acba17).
 
-For this tutorial, we will be analyzing a batch of data from the HAARVI cohort. The aim of this tutorial is to enable you to read in, QC, analyse, and visualize surface staining and intracellular staining cell data from a flow cytometry experiment.
+In flow cytometry, t-SNE and umap analyses are useful for segregating and identifying unique cellular populations based on their surface protein expression (SS) as well as the cytokines or chemokines being secreted by specific subsets as assessed via intracellular staining (ICS).
 
-NOTE: If you have successfully completed the COMPASS tutorial, the same saved gating set can be used allowing you to skip the initial reading-in and QC of the raw FACS files.
+For this tutorial, we will be analyzing a batch of data from the HAARVI cohort. This guide aims to enable you to read in, QC, analyze, and visualize surface staining and intracellular staining cell data from a typical flow cytometry experiment with the assumtpion that the data has been correctly compensated and formated into an R-friendly syntax.
+
+**NOTE**: If you have completed the Seshadrilab [COMPASS tutorial](https://github.com/seshadrilab/Flow_Analysis_Tutorial), the same (saved) gating set can be used for this tutorial, allowing you to skip the initial reading-in and QC of the raw FACS files.
 
 # Installation
 
@@ -26,6 +28,7 @@ To install the R packages, open an R session and enter the following command lin
 
 ```{r eval=, warning=FALSE, include=FALSE}
 install.packages("Rtsne")
+install.packages("uwot")
 install.packages("devtools")
 install.packages("tidyverse")
 install.packages("scales")
@@ -83,7 +86,7 @@ The .xml and .fcs files for this dataset are stored in the Seshadri Lab shared d
 # Create a GatingSet
 ### Set-up
 
-A GatingSet holds a set of GatingHierarchy objects, representing a set of samples and the gating scheme associated with each. Look at the workspace metadata to choose which keywords to extract into the GatingSet. The flowjo_to_gatingset() function parses a flowJo Workspace to generate a GatingSet object.
+A GatingSet holds a set of GatingHierarchy objects, representing a set of samples and the gating scheme associated with each. Look at the workspace metadata to choose which keywords to extract into the GatingSet. The *flowjo_to_gatingset()* function parses a flowJo Workspace to generate a GatingSet object.
 
 ```{r}
 names(fj_ws_get_keywords(ws, 117)) 
@@ -114,7 +117,7 @@ gs <- flowjo_to_gatingset(ws,
 
 ### Quality Control (QC)
 
-Make sure that the gating trees are consistent for all samples.
+Ensure that the gating trees are consistent for all samples.
 
 ```{r}
 pop_lists <- lapply(gs, gh_get_pop_paths)
@@ -167,7 +170,7 @@ save_gs(gs, here::here("out/GatingSet"))
 
 # Preparation of Data for t-SNE 
 
-With the data read-in, QC'ed and converted into a gatingset, it is time to extract the data required for downstream t-SNE.
+With the data read-in, QC'ed and converted into a gating set, it is time to extract the data required for downstream dimred analysis.
 
 ### Define the populations from which you like to extract their counts 
 
@@ -203,7 +206,7 @@ pops2extract <- c("/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live",
 
 ### Extract the Counts
 
-The following chunk of code extracts the count data for the populations defined above. Additionally, it renames the populations of interest for easier visualization of the raw data within a given data frame or table. Use dplyr::select() to define useful columns for your analyses. These should include columns containing patient identifiers, treatments, etc. 
+The following chunk of code extracts the count data for the populations defined above. Additionally, it renames the populations of interest for easier visualization of the raw data within a given data frame or table. Use *dplyr::select()* to define useful columns for your analyses. These should include columns containing patient identifiers, treatments, etc. 
 
 ```{r}
 pop_counts <- gs_pop_get_count_with_meta(gs, subpopulations = pops2extract) %>%
@@ -244,7 +247,7 @@ These data can (and should) be saved for quick analysis later on.
 
 ### Sample the Data
 
-In some instances, it may be prudent to sample your data so that each condition (i.e. "Stim"ulation) has an equal number of cells or observations. This can prevent potential bias; however, it may not be necessary for all analyses. Here, the CD4 cell population was selected and each "Stim" sampled 5000 times (i.e. 5000 cells per "Stim" per patient).
+In some instances, it may be prudent to sample your data so that each condition (i.e. "Stim"ulation) has an equal number of cells or observations. This can reduce computational burden as well as prevent potential bias; however, it may not be necessary for all analyses. Here, the CD4 cell population was selected and each "Stim" sampled 5000 times (i.e. 5000 cells per "Stim" per patient).
 
 Below is a custom function which randomly samples sub-groups and distribute these data for downstream analyses. 
 ```{r results ='hide', message = FALSE, results = FALSE}
@@ -308,7 +311,7 @@ cd4_tsne_sample_sizes %>%
   unique()
 ```
 
-### Create a data matrix to input into t-SNE
+### Create a data matrix to input into t-SNE/UMAP
 
 First, define the gates that you like to include in the matrix and include them in a new object. These data can be viewed and selected using the gh_get_pop_paths() function.
 
@@ -343,7 +346,9 @@ gates_to_extract_membership <- c("/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live
                                  "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/HLADR+")
 ```
 
-Next, assess whether the defined populations (gates_to_extract_membership) exist in the gating set. This is a useful QC step at this stage of the analysis. The result should be returned as TRUE.
+Next, assess whether the defined populations (*gates_to_extract_membership()*) exist in the gating set. This is a useful QC step at this stage of the analysis to ensure that the data being associated is correct.
+
+The result should be returned as: **TRUE**
 
 ```{r}
 all(gates_to_extract_membership %in% intersect(gh_get_pop_paths(gs), gh_get_pop_paths(gs)))
@@ -375,7 +380,7 @@ sampleGatingHierarchy <- function(gh, parentGate, n, otherGates = NULL) {
 
 ```
 
-Extract the CD4 specific data and input it into the matrix.
+Extract the CD4 specific count and membership data and input it into the prepared matrix.
 
 ```{r}
 cd4_data4dimred <- map2_dfr(cd4_tsne_sample_sizes$sampleName, cd4_tsne_sample_sizes$nsamp,
@@ -392,7 +397,7 @@ cd4_data4dimred[1:4,]
 
 ## Scale the data and apend it to the CD4 matrix
 
-Scaling centers and/or scales the columns of a numeric matrix by the normalization of a dataset using the mean value and standard deviation and is a standard step in all
+Scaling centers and/or scales the columns of a numeric matrix by the normalization of a dataset using the mean value and standard deviation and is a standard step in many analyses. We highly recommend scaling all data prior to further analysis.
 
 ```{r}
 pData(parameters(gh_pop_get_data(gs[[1]])))[,c(1,2)] 
@@ -415,12 +420,13 @@ cd4_data4dimred_scaled <- bind_cols(cd4_data4dimred, cd4_data_scaled)
 
 # Run t-SNE
 
-The following steps may take significant amount of time depending on the the number of variables, computational power, and number of cells sampled. Further, the number of iterations can also be altered.
+The following steps may take a significant amount of time depending on the number of variables, computational power, and the number of cells sampled. Further, the number of iterations can also be altered which can also have a significant effect on analysis time.
 
 
 ### Set the seed
 
-A seed is a necessary numerical marker used by t-SNE analyeses to ensure reproducibility. If not defined, the t-SNE output may vary from run to run.Below we have used the date on which the following tutorial was created; however, this can be any value you want.  
+A seed is a necessary numerical marker used by t-SNE analyses to ensure reproducibility. If not defined, R will randomly assign a seed and the t-SNE/UMAP output may vary from run to run. Below, we have used the date on which the following tutorial was created; however, this can be any value you want.
+
 ```{r}
 set.seed(date)
 ```
@@ -466,8 +472,9 @@ cd4_tsne_and_data_scaled %>%
 
 # Advanced Plotting
 
-It is interesting to overlay ICS or SS data onto the t-SNE plot we generated above.The following chunk of code defines a set theme from which the proceeding plots are generated. This can be easily altered to your individual needs.
+The ability to overlay ICS or SS data onto the t-SNE plot we generated above is a powerful tool that can allow for the generation of biological hypotheses and conclusions.
 
+The following chunk of code defines a set theme from which the proceeding plots are generated. This can be easily altered to your individual needs.
 
 ```{r}
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
@@ -490,7 +497,7 @@ gg_themes <- ggplot(run_tmp, aes(x = x.tsne, y = y.tsne)) +
         strip.text = element_text(size=12))
 ```
 
-Below, is an example whereby TNFa expression is overlaid onto the CD4 t-SNE data and then stratified (as.factor(x)) by stimulation condition.
+Below, is an example whereby TNFa expression is overlaid onto the CD4 t-SNE data and then stratified (as.factor(x)) by stimulation condition. This can be repeated for any surface marker or stained cytokine by altering the code accordingly.
 
 Specific populations can be easily called using  dput(gh_get_pop_paths(gs))
 ```{r}
