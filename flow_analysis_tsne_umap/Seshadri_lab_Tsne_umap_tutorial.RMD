@@ -24,24 +24,24 @@ The following R packages are required for this tutorial:
 -CytoML
 -tidyverse
 
-To install the R packages, open an R session and enter the following command lines:
+Check if the required packages are installed and install them if not:
 
 ```{r eval=, warning=FALSE, include=FALSE}
-install.packages("Rtsne")
-install.packages("uwot")
-install.packages("devtools")
-install.packages("tidyverse")
-install.packages("scales")
-install.packages("patchwork")
-install.packages("hues")
-install.packages("RColorBrewer")
-install.packages("tidyselect")
-install.packages("ggrastr")
-install.packages("here")
-install.packages("BiocManager")
-BiocManager::install("CytoML")
-BiocManager::install("flowCore")
-BiocManager::install("flowWorkspace")
+if (!require(Rtsne)) install.packages("Rtsne")
+if (!require(uwot)) install.packages("uwot")
+if (!require(devtools)) install.packages("devtools")
+if (!require(tidyverse)) install.packages("tidyverse")
+if (!require(scales)) install.packages("scales")
+if (!require(patchwork)) install.packages("patchwork")
+if (!require(hues)) install.packages("hues")
+if (!require(RColorBrewer)) install.packages("RColorBrewer")
+if (!require(tidyselect)) install.packages("tidyselect")
+if (!require(ggrastr)) install.packages("ggrastr")
+if (!require(here)) install.packages("here")
+if (!require(BiocManager)) install.packages("BiocManager")
+if (!require(CytoML)) BiocManager::install("CytoML")
+if (!require(flowCore)) BiocManager::install("flowCore")
+if (!require(flowWorkspace)) BiocManager::install("flowWorkspace")
 ```
 
 # Load in the Appropriate Libaries
