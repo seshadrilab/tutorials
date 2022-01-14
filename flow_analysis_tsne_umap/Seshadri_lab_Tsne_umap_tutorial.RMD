@@ -159,11 +159,11 @@ plot(gs, fontsize=15, bool=T)
 Note, this can take a while.
 
 ```{r include = TRUE, eval = FALSE}
-if(!dir.exists(here::here("out/GatingSet"))) {
-  cat(sprintf("Creating folder %s\n", here::here("out/GatingSet")))
-  dir.create(here::here("out/GatingSet"), recursive = T)
+if(!dir.exists(here::here("./out/GatingSet"))) {
+  cat(sprintf("Creating folder %s\n", here::here("./out/GatingSet")))
+  dir.create(here::here("./out/GatingSet"), recursive = T)
 }
-save_gs(gs, here::here("out/GatingSet"))
+save_gs(gs, here::here("./out/GatingSet"))
 
 ```
 
