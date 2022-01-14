@@ -66,13 +66,15 @@ theme_set(theme_bw(18))
 
 # Load in the Data
 
+The .xml and .fcs files for this dataset are stored in the Seshadri Lab shared drive (LSR Fortessa/2021 Summer HAARVIVAC/20210902 HAARVIVAC Batch 4/). Download the .xml file and folder containing the .fcs files and drag into the "data" folder of this project directory. Make sure the folder is unzipped (Google Drive may zip it when you download) and note that this is a large folder (1.8 GB).
+
 ```{r}
 date <- 20211220
 ### Location of XML file
-xml_path <- here::here("data/20211014_HAARVIVAC_B4V3_JP.xml")
+xml_path <- here::here("./data/20211014_HAARVIVAC_B4V3_JP.xml")
 
 ### Location of .fcs files
-fcs_subfolder <- here::here("data/20210902_HAARVIVAC_FCS_B4/")
+fcs_subfolder <- here::here("./data/20210902_HAARVIVAC_FCS_B4/")
 ```
 
 Create a flowjo_workspace object with the function open_flowjo_xml().
@@ -81,7 +83,6 @@ Create a flowjo_workspace object with the function open_flowjo_xml().
 ws <- CytoML::open_flowjo_xml(xml_path)
 ```
 
-The .xml and .fcs files for this dataset are stored in the Seshadri Lab shared drive (LSR Fortessa/2021 Summer HAARVIVAC/20210902 HAARVIVAC Batch 4/). Download the .xml file and folder containing the .fcs files and drag into the "data" folder of this project directory.
 
 # Create a GatingSet
 ### Set-up
