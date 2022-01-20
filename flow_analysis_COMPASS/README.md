@@ -69,7 +69,7 @@ library(flowWorkspace)
 library(COMPASS)
 ```
 The .xml and .fcs files for this dataset are stored in the Seshadri Lab shared drive (LSR Fortessa/2021 Summer HAARVIVAC/20210902 HAARVIVAC Batch 4/).
-Download the .xml file and folder containing the associated .fcs files and drag them into the "data" folder of the project directory.
+Either download the .xml file and folder containing the associated .fcs files and drag them into the "data" folder of the project directory, or create a shortcut for them in the "data" folder.
 
 This data has been gated in FlowJo v9 and will be parsed using flowWorkspace.
 
