@@ -273,6 +273,17 @@ CC <- COMPASSContainerFromGatingSet(gs,
                                     mp = markermap,
                                     countFilterThreshold = 5000)
 ```
+```R
+## Extracting cell counts
+## Fetching 4+
+## Fetching child nodes
+## common markers are: 
+## Time FSC-A FSC-H SSC-A CD8b TNFa CD107a CD154 CD3 IL2 CD4 IL17a IL4_5_13 CD14_19 CCR7 CD38 LD IFNg CD45RA HLADR 
+## Extracting single cell data for 4+/IL2|4+/IL4513|4+/IFNG|4+/TNF|4+/IL17|4+/154|4+/107a
+## ..........................................................................................................................................Creating COMPASS Container
+## Filtering low counts
+## Filtering 1 samples due to low counts
+```
 Look at some basic info about our COMPASSContainer.
 ```R
 CC
