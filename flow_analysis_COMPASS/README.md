@@ -71,7 +71,7 @@ library(flowCore)
 library(flowWorkspace)
 library(COMPASS)
 ```
-Download the .xml file [20200605_COVID_ICS-B3_KY3](https://drive.google.com/file/d/1PKZSkXykpjjkxtLMEApVszYCj2sPoKbZ/view?usp=sharing) and folder containing the associated .fcs files [20200605_COVID_ICS-B3-FCS](https://drive.google.com/drive/folders/1-Mi0L4BicrVMevLShaF4850G4VCCX2N2?usp=sharing) and drag them into the "data" folder of the project directory.
+Download the .xml file ([20200605_COVID_ICS-B3_KY3](https://drive.google.com/file/d/1PKZSkXykpjjkxtLMEApVszYCj2sPoKbZ/view?usp=sharing)) and folder containing the associated .fcs files ([20200605_COVID_ICS-B3-FCS](https://drive.google.com/drive/folders/1-Mi0L4BicrVMevLShaF4850G4VCCX2N2?usp=sharing)) and drag them into the "data" folder of the project directory.
 
 This data has been gated in FlowJo v9 and will be parsed using flowWorkspace.
 
