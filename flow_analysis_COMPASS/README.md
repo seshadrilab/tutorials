@@ -289,7 +289,7 @@ Look at some basic info about our COMPASSContainer.
 CC
 ```
 ```R
-## A COMPASSContainer with 80 samples from 16 individuals, containing data across 7 markers.
+## A COMPASSContainer with 137 samples from 23 individuals, containing data across 7 markers.
 ```
 
 ## Run COMPASS
