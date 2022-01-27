@@ -6,7 +6,10 @@ A tutorial for analyzing flow cytometry data in R using COMPASS (Combinatorial P
 
 This tutorial contains a basic workflow for analyzing flow cytometry data using COMPASS. COMPASS is a statistical framework that allows for unbiased analysis of antigen-specific T-cell subsets. COMPASS uses a Bayesian hierarchial framework to model all obeserved cell-subsets and select the most likely to be antigen-specific while regularizing the small cell counts that often arise in multi-parameter space. The model gives a posterior probability of specificity for each cell-subset and each sample, which can be used to profile a subject's immune response to external stimuli (e.g., infection or vaccination). 
 
-For this tutorial, we will be analyzing a batch of data from the HAARVI cohort. For more information about COMPASS, please refer to the original manuscript and documentation:
+For this tutorial, we will be analyzing a batch of intracellular cytokine staining (ICS) data from a convalescent cohort of COVID-19 subjects who were either hospitalized or not hospitalized. See the accompanying paper published in JCI Insight on Feb 23, 2021: 
+* [Comorbid illnesses are associated with altered adaptive immune responses to SARS-CoV-2](https://pubmed.ncbi.nlm.nih.gov/33621211/)  
+
+For more information about COMPASS, please refer to the original manuscript and documentation:
 * https://www.nature.com/articles/nbt.3187
 * https://bioconductor.org/packages/COMPASS/
 
@@ -68,18 +71,17 @@ library(flowCore)
 library(flowWorkspace)
 library(COMPASS)
 ```
-The .xml and .fcs files for this dataset are stored in the Seshadri Lab shared drive (LSR Fortessa/2021 Summer HAARVIVAC/20210902 HAARVIVAC Batch 4/).
-Either download the .xml file and folder containing the associated .fcs files and drag them into the "data" folder of the project directory, or create a shortcut for them in the "data" folder.
+Download the .xml file [20200605_COVID_ICS-B3_KY3](https://drive.google.com/file/d/1PKZSkXykpjjkxtLMEApVszYCj2sPoKbZ/view?usp=sharing) and folder containing the associated .fcs files [20200605_COVID_ICS-B3-FCS](https://drive.google.com/drive/folders/1-Mi0L4BicrVMevLShaF4850G4VCCX2N2?usp=sharing) and drag them into the "data" folder of the project directory.
 
 This data has been gated in FlowJo v9 and will be parsed using flowWorkspace.
 
 **FYI:** When using FlowJo v9, the FlowJo workspace must be exported as an .xml file to create a flowjo_workspace object with the function open_flowjo_xml(). However, when using FlowJo v10, the FlowJo workspace can be loaded directly as a .wsp file using the same function open_flow_xml().
 ```R
 # Location of XML file
-xml_path <- here::here("data/20211014_HAARVIVAC_B4V3_JP.xml")
+xml_path <- here::here("data/20200605_COVID_ICS-B3_KY3.xml")
 
 # Location of .fcs files
-fcs_subfolder <- here::here("data/20210902_HAARVIVAC_FCS_B4/")
+fcs_subfolder <- here::here("data/20200605_COVID_ICS-B3-FCS/")
 ```
 
 Create a flowjo_workspace object with the function open_flowjo_xml().
@@ -97,7 +99,7 @@ keywords2import <- c("EXPERIMENT NAME",
                        "$DATE",
                        "SAMPLE ID",
                        "PATIENT ID",
-                       "Stim",
+                       "STIM",
                        "WELL ID",
                        "PLATE NAME") 
 sampleGroup <- "Samples"
@@ -117,53 +119,53 @@ unique(pop_lists)
 ```
 ```R
 ## [[1]]
-##  [1] "root"                                                         
-##  [2] "/Time"                                                        
-##  [3] "/Time/CD3+"                                                   
-##  [4] "/Time/CD3+/CD14-CD19-"                                        
-##  [5] "/Time/CD3+/CD14-CD19-/Lymphocytes"                            
-##  [6] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet"                    
-##  [7] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live"               
-##  [8] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+"          
-##  [9] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CCR7+"    
-## [10] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD45RA+"  
-## [11] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD107a+"  
-## [12] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/CD154+"   
-## [13] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IFNg+"    
-## [14] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL2+"     
-## [15] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL4_5_13+"
-## [16] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/IL17a+"   
-## [17] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD4+/TNFa+"    
-## [18] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+"          
-## [19] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CCR7+"    
-## [20] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD45RA+"  
-## [21] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD107a+"  
-## [22] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/CD154+"   
-## [23] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IFNg+"    
-## [24] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL2+"     
-## [25] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL4_5_13+"
-## [26] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/IL17a+"   
-## [27] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD8+/TNFa+"    
-## [28] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/CD38+"         
-## [29] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/DN"            
-## [30] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/DP"            
-## [31] "/Time/CD3+/CD14-CD19-/Lymphocytes/Singlet/Live/HLADR+"
+## [1] "root"                                     
+## [2] "/Time"                                    
+## [3] "/Time/LD-3+"                              
+## [4] "/Time/LD-3+/1419-3+"                      
+## [5] "/Time/LD-3+/1419-3+/S"                    
+## [6] "/Time/LD-3+/1419-3+/S/Lymph"              
+## [7] "/Time/LD-3+/1419-3+/S/Lymph/4+"           
+## [8] "/Time/LD-3+/1419-3+/S/Lymph/4+/107a"      
+## [9] "/Time/LD-3+/1419-3+/S/Lymph/4+/154"       
+## [10] "/Time/LD-3+/1419-3+/S/Lymph/4+/CCR7+"     
+## [11] "/Time/LD-3+/1419-3+/S/Lymph/4+/CD45RA+"   
+## [12] "/Time/LD-3+/1419-3+/S/Lymph/4+/IFNG"      
+## [13] "/Time/LD-3+/1419-3+/S/Lymph/4+/IL2"       
+## [14] "/Time/LD-3+/1419-3+/S/Lymph/4+/IL17"      
+## [15] "/Time/LD-3+/1419-3+/S/Lymph/4+/IL4513"    
+## [16] "/Time/LD-3+/1419-3+/S/Lymph/4+/TNF"       
+## [17] "/Time/LD-3+/1419-3+/S/Lymph/8+"           
+## [18] "/Time/LD-3+/1419-3+/S/Lymph/8+/IFNG"      
+## [19] "/Time/LD-3+/1419-3+/S/Lymph/CD38+"        
+## [20] "/Time/LD-3+/1419-3+/S/Lymph/HLADR+"       
+## [21] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+"        
+## [22] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/107a"   
+## [23] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/154"    
+## [24] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/CCR7+"  
+## [25] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/CD45RA+"
+## [26] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IFNG"   
+## [27] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL2"    
+## [28] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL17"   
+## [29] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL4513" 
+## [30] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/TNF" 
 ```
 Remove channels from flow data that are not used by gates.
 ```R
 gs <- gs_remove_redundant_channels(gs) 
 ```
 ```R
-## drop SSC-H, V655-A, V570-A
+## drop SSC-H
 ```
-Add names to all channels or fix their names.
+Add names to all channels or change their names.
 ```R
 dput(unname(pData(parameters(gh_pop_get_data(gs[[1]])))[,2]))
 ```
 ```R
-## structure(c(NA, NA, NA, NA, "CD8b", "TNFa", "CD107a", "CD154", 
-## "CD3", "IL2", "CD4", "IL17a", "IL4_5_13", "CD14_19", "CCR7", 
-## "CD38", "LD", "INFg", "CD45RA", "HLADR"), class = "AsIs")
+## structure(c(NA, NA, NA, NA, "CD8b BB700", "TNFa FITC", "CD107a PE-Cy7", 
+## "CD154 PE-Cy5", "CD3 ECD", "IL2 PE", "CD4 APC-H7", "IL17a Ax700", 
+## "IL4/5/13 APC", "CD14/CD19 BV785", "CCR7 BV711", "CD38 BV605", 
+## "L/D", "IFNg V450", "CD45RA BUV737", "HLADR BUV395"), class = "AsIs")
 ```
 ```R
 markernames <- c("Time", "FSC-A", "FSC-H", "SSC-A", "CD8b", "TNFa", "CD107a",
@@ -190,17 +192,41 @@ pData(parameters(gh_pop_get_data(gs[[1]])))[,c(1,2)]
 ## $P14 <R660-A> IL4_5_13
 ## $P15 <V780-A>  CD14_19
 ## $P16 <V710-A>     CCR7
-## $P18 <V610-A>     CD38
-## $P20 <V510-A>       LD
-## $P21 <V450-A>     IFNg
-## $P22 <U730-A>   CD45RA
-## $P23 <U395-A>    HLADR
+## $P17 <V610-A>     CD38
+## $P18 <V510-A>       LD
+## $P19 <V450-A>     IFNg
+## $P20 <U730-A>   CD45RA
+## $P21 <U395-A>    HLADR
 ```
-Plot gating tree.
+In this tutorial, we will only run COMPASS on CD4+ T cells, but what if we wanted to also run COMPASS on CD8+ T cells? Currently, most of the gates are missing from the "8+" node. Let's grab the missing gates from the "NOT4+" node and add them under the "8+" node.
+```R
+gates_to_copy <- c("/Time/LD-3+/1419-3+/S/Lymph/NOT4+/107a",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/154", 
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL2",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL17",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL4513",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/TNF",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/CCR7+",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/CD45RA+")
+
+for(path in gates_to_copy) {
+  gs_pop_add(gs, lapply(gs, gh_pop_get_gate, y=path),
+             parent = "/Time/LD-3+/1419-3+/S/Lymph/8+")
+}
+recompute(gs, "/Time/LD-3+/1419-3+/S/Lymph/8+")
+```
+```R
+# done!
+```
+Next, let's get rid of the "NOT4+" node and all of its descendants.
+```R
+gs_pop_remove(gs, "/Time/LD-3+/1419-3+/S/Lymph/NOT4+")
+```
+Plot the gating tree.
 ```R
 plot(gs, fontsize=15, bool=T)
 ```
-![image](https://user-images.githubusercontent.com/89667908/145899923-a9269520-6f99-4e70-a170-6a2094fd7554.png)
+![image](https://user-images.githubusercontent.com/89667908/151273845-6a500bf4-9546-4a3d-880a-0fd08d916a6c.png)
 
 
 ### Save GatingSet
@@ -217,17 +243,27 @@ single cell data are extracted and fed into the COMPASSContainer constructor.
 set.seed(123)
 
 # A regular expression to match a single node in the gating tree
-parent_node <- "CD4+"
+parent_node <- "4+"
 
 # A character identifying the subject id column in the GatingSet metadata
 id <- "SAMPLE ID"
 
-# markermap contains the output of markernames(gs)
 markernames(gs) 
+```
+```R
+##   <B710-A>   <B515-A>   <G780-A>   <G660-A>   <G610-A>   <G575-A>   <R780-A>   <R710-A> 
+##     "CD8b"     "TNFa"   "CD107a"    "CD154"      "CD3"      "IL2"      "CD4"    "IL17a" 
+##   <R660-A>   <V780-A>   <V710-A>   <V610-A>   <V510-A>   <V450-A>   <U730-A>   <U395-A> 
+## "IL4_5_13"  "CD14_19"     "CCR7"     "CD38"       "LD"     "IFNg"   "CD45RA"    "HLADR" 
+```
+```R
+# markermap contains the output of markernames(gs)
 markermap <- list("IL2", "IL4_5_13", "IFNg", "TNFa", "IL17a", "CD154", "CD107a")
-names(markermap) <- paste0(parent_node, "/", c("IL2+", "IL4_5_13+", "IFNg+",
-                                               "TNFa+", "IL17a+", "CD154+", 
-                                               "CD107a+"))
+
+# Assign names to the list of markers based on the gate names
+names(markermap) <- paste0(parent_node, "/", c("IL2", "IL4513", "IFNG",
+                                               "TNF", "IL17", "154", 
+                                               "107a"))
 ```
 Construct the COMPASSContainer. If the number of parent cells is less than countFilterThreshold, we drop that file (default is 5000 cells).
 ```R
