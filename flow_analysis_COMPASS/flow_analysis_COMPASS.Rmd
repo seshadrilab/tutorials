@@ -80,7 +80,7 @@ library(COMPASS)
 ```
 
 # Load data
-Download the .xml file ([20200605_COVID_ICS-B3_KY3](https://drive.google.com/file/d/1PKZSkXykpjjkxtLMEApVszYCj2sPoKbZ/view?usp=sharing)) and folder containing the associated .fcs files ([20200605_COVID_ICS-B3-FCS](https://drive.google.com/drive/folders/1-Mi0L4BicrVMevLShaF4850G4VCCX2N2?usp=sharing)) and drag them into the "data" folder of the project directory.
+Download the .xml file and folder containing the associated .fcs files (see the README for updated directions). Then, drag them into the "data" folder of the project directory.
 
 This data has been gated in FlowJo v9 and will be parsed using flowWorkspace.
 
@@ -88,10 +88,10 @@ This data has been gated in FlowJo v9 and will be parsed using flowWorkspace.
 
 ```{r}
 # Location of XML file
-xml_path <- here::here("data/20200605_COVID_ICS-B3_KY3.xml")
+xml_path <- here::here("data/20200605_COVID_ICS-B3-trunc.xml")
 
 # Location of .fcs files
-fcs_subfolder <- here::here("data/20200605_COVID_ICS-B3-FCS/")
+fcs_subfolder <- here::here("data/20200605_COVID_ICS-B3-FCS-trunc/")
 ```
 
 Create a flowjo_workspace object with the function open_flowjo_xml().
@@ -112,7 +112,9 @@ GatingSet. The flowjo_to_gatingset() function parses a flowJo Workspace to
 generate a GatingSet object.
 
 ```{r}
+# Look at all of the keywords
 names(fj_ws_get_keywords(ws, 117)) 
+# Choose which keywords to keep
 keywords2import <- c("EXPERIMENT NAME",
                        "$DATE",
                        "SAMPLE ID",
@@ -156,7 +158,7 @@ markernames(gs) <- markernames
 pData(parameters(gh_pop_get_data(gs[[1]])))[,c(1,2)]
 ```
 
-We want to run COMPASS on CD4+ and CD8+ T cells, but currently most of the gates are missing from the "8+" node. Let's grab the missing gates from the "NOT4+" node and add them under the "8+" node.
+In this tutorial, we will only run COMPASS on CD4+ T cells, but what if we wanted to also run COMPASS on CD8+ T cells? Currently, most of the gates are missing from the "8+" node. Let's grab the missing gates from the "NOT4+" node and add them under the "8+" node.
 
 ```{r}
 gates_to_copy <- c("/Time/LD-3+/1419-3+/S/Lymph/NOT4+/107a",
