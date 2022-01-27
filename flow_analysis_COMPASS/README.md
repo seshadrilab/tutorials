@@ -296,9 +296,26 @@ CC
 Fit the COMPASS model using the COMPASSContainer. To fit the COMPASS model, we need to specify how to identify the samples that are our treatment condition and our control condition based on the metadata. Here, we will run COMPASS on the samples stimmed by spike 1 with DMSO as our negative control. For now, let's just do 100 iterations for speed.
 ```R
 fit <- COMPASS(CC,
-               treatment = Stim == "S1",
-               control = Stim == "DMSO",
+               treatment = STIM == "Spike 1",
+               control = STIM == "DMSO",
                iterations = 100)
+```
+```R
+## There are a total of 23 samples from 23 individuals in the 'treatment' group.
+## There are a total of 22 samples from 22 individuals in the 'control' group.
+## The selection criteria for 'treatment' and 'control' do not produce paired samples for each individual. The following individual(s) will be dropped:
+## 	116C
+## The model will be run on 22 paired samples.
+## The category filter has removed 45 of 64 categories.
+## There are a total of 19 categories to be tested.
+## Initializing parameters...
+## Computing initial parameter estimates...
+## Keeping 100 iterations. We'll thin every 8 iterations.
+## Burnin for 100 iterations...
+## Sampling 800 iterations...
+## Done!
+## Computing the posterior difference in proportions, posterior log ratio...
+## Done!
 ```
 Save the COMPASS run output.
 ```R
@@ -321,23 +338,29 @@ write.table(FS_PFS_df,
 FS_PFS_df
 ```
 ```R
-##    SAMPLE ID          FS          PFS
-## 1     188C-1 0.010866142 0.0083877551
-## 2     188C-2 0.057244094 0.0307482993
-## 3     191C-1 0.025039370 0.0169455782
-## 4     191C-2 0.033385827 0.0195102041
-## 5     210C-1 0.005511811 0.0031462585
-## 6     210C-2 0.047559055 0.0253061224
-## 7     235C-1 0.001181102 0.0006122449
-## 8     235C-2 0.020236220 0.0089965986
-## 9      27H-1 0.004960630 0.0025204082
-## 10     27H-2 0.049921260 0.0269795918
-## 11     35H-1 0.013937008 0.0108095238
-## 12     35H-2 0.019763780 0.0104387755
-## 13     38H-1 0.008740157 0.0075034014
-## 14     38H-2 0.046299213 0.0247346939
-## 15     44H-1 0.040944882 0.0224319728
-## 16     44H-2 0.037874016 0.0225510204
+##    SAMPLE ID          FS         PFS
+## 1       103C 0.029685039 0.014197279
+## 2       117C 0.029763780 0.013421769
+## 3       121C 0.073464567 0.038608844
+## 4       127C 0.037952756 0.016044218
+## 5        12C 0.069527559 0.037530612
+## 6       130C 0.041811024 0.020547619
+## 7       131C 0.070000000 0.037448980
+## 8       133C 0.061968504 0.032408163
+## 9       136C 0.043464567 0.018448980
+## 10      142C 0.052047244 0.028411565
+## 11      143C 0.069133858 0.034911565
+## 12      147C 0.041181102 0.018078231
+## 13      150C 0.045433071 0.020394558
+## 14     15518 0.073307087 0.039765306
+## 15      164C 0.056614173 0.030292517
+## 16        23 0.079212598 0.043227891
+## 17        25 0.060787402 0.029462585
+## 18       38C 0.044015748 0.018850340
+## 19       96C 0.029685039 0.013210884
+## 20     BWT22 0.003543307 0.002295918
+## 21      HS09 0.023858268 0.012996599
+## 22      HS10 0.008346457 0.004054422
 ```
 
 ## Visualize
@@ -346,8 +369,8 @@ Plot a heatmap of the mean probability of response.
 plot(fit, show_rownames = TRUE)
 ```
 ```R
-## The 'threshold' filter has removed 8 categories:
-## IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&CD107a, IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&CD154&!CD107a
+## The 'threshold' filter has removed 6 categories:
+## IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a, IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a
 ```
-![image](https://user-images.githubusercontent.com/89667908/145901258-89ba874c-77db-4c3e-b46c-565a9ac0be53.png)
+![image](https://user-images.githubusercontent.com/89667908/151276244-9dbe0ca9-de66-4425-9486-4e44e7c597a0.png)
 
