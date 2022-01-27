@@ -6,7 +6,7 @@ A tutorial for analyzing flow cytometry data in R using COMPASS (Combinatorial P
 
 This tutorial contains a basic workflow for analyzing flow cytometry data using COMPASS. COMPASS is a statistical framework that allows for unbiased analysis of antigen-specific T-cell subsets. COMPASS uses a Bayesian hierarchial framework to model all obeserved cell-subsets and select the most likely to be antigen-specific while regularizing the small cell counts that often arise in multi-parameter space. The model gives a posterior probability of specificity for each cell-subset and each sample, which can be used to profile a subject's immune response to external stimuli (e.g., infection or vaccination). 
 
-For this tutorial, we will be analyzing a batch of intracellular cytokine staining (ICS) data from a convalescent cohort of COVID-19 subjects who were either hospitalized or not hospitalized. For more information about this cohort, please see the accompanying paper published in JCI Insight on Feb 23, 2021: 
+For this tutorial, we will be analyzing intracellular cytokine staining (ICS) data from a convalescent cohort of COVID-19 subjects who were either hospitalized or not hospitalized. For more information about this cohort, please see the accompanying paper published in JCI Insight on Feb 23, 2021: 
 * [Comorbid illnesses are associated with altered adaptive immune responses to SARS-CoV-2](https://pubmed.ncbi.nlm.nih.gov/33621211/)  
 
 For more information about COMPASS, please refer to the original manuscript and documentation:
@@ -71,17 +71,17 @@ library(flowCore)
 library(flowWorkspace)
 library(COMPASS)
 ```
-Download the .xml file ([20200605_COVID_ICS-B3_KY3](https://drive.google.com/file/d/1PKZSkXykpjjkxtLMEApVszYCj2sPoKbZ/view?usp=sharing)) and folder containing the associated .fcs files ([20200605_COVID_ICS-B3-FCS](https://drive.google.com/drive/folders/1-Mi0L4BicrVMevLShaF4850G4VCCX2N2?usp=sharing)) and drag them into the "data" folder of the project directory.
+Download the .xml file and folder containing the associated .fcs files from [Dropbox](https://www.dropbox.com/sh/snr4ycge3jdm50k/AAA4RaV64vDgRXr04wkm9YeMa?dl=0). Then, drag them into the "data" folder of the project directory.
 
 This data has been gated in FlowJo v9 and will be parsed using flowWorkspace.
 
 **FYI:** When using FlowJo v9, the FlowJo workspace must be exported as an .xml file to create a flowjo_workspace object with the function open_flowjo_xml(). However, when using FlowJo v10, the FlowJo workspace can be loaded directly as a .wsp file using the same function open_flow_xml().
 ```R
 # Location of XML file
-xml_path <- here::here("data/20200605_COVID_ICS-B3_KY3.xml")
+xml_path <- here::here("data/20200605_COVID_ICS-B3-trunc.xml")
 
 # Location of .fcs files
-fcs_subfolder <- here::here("data/20200605_COVID_ICS-B3-FCS/")
+fcs_subfolder <- here::here("data/20200605_COVID_ICS-B3-FCS-trunc/")
 ```
 
 Create a flowjo_workspace object with the function open_flowjo_xml().
@@ -94,7 +94,9 @@ ws <- open_flowjo_xml(xml_path)
 A GatingSet holds a set of GatingHierarchy objects, representing a set of samples and the gating scheme associated with each.
 Look at the workspace metadata to choose which keywords to extract into the GatingSet. The flowjo_to_gatingset() function parses a flowJo Workspace to generate a GatingSet object.
 ```R
+# Look at all of the keywords
 names(fj_ws_get_keywords(ws, 117)) 
+# Choose which keywords to keep
 keywords2import <- c("EXPERIMENT NAME",
                        "$DATE",
                        "SAMPLE ID",
@@ -282,14 +284,14 @@ CC <- COMPASSContainerFromGatingSet(gs,
 ## Extracting single cell data for 4+/IL2|4+/IL4513|4+/IFNG|4+/TNF|4+/IL17|4+/154|4+/107a
 ## ..........................................................................................................................................Creating COMPASS Container
 ## Filtering low counts
-## Filtering 1 samples due to low counts
+## Filtering 0 samples due to low counts
 ```
 Look at some basic info about our COMPASSContainer.
 ```R
 CC
 ```
 ```R
-## A COMPASSContainer with 137 samples from 23 individuals, containing data across 7 markers.
+## A COMPASSContainer with 30 samples from 5 individuals, containing data across 7 markers.
 ```
 
 ## Run COMPASS
@@ -301,13 +303,11 @@ fit <- COMPASS(CC,
                iterations = 100)
 ```
 ```R
-## There are a total of 23 samples from 23 individuals in the 'treatment' group.
-## There are a total of 22 samples from 22 individuals in the 'control' group.
-## The selection criteria for 'treatment' and 'control' do not produce paired samples for each individual. The following individual(s) will be dropped:
-## 	116C
-## The model will be run on 22 paired samples.
-## The category filter has removed 45 of 64 categories.
-## There are a total of 19 categories to be tested.
+## There are a total of 5 samples from 5 individuals in the 'treatment' group.
+## There are a total of 5 samples from 5 individuals in the 'control' group.
+## The model will be run on 5 paired samples.
+## The category filter has removed 38 of 54 categories.
+## There are a total of 16 categories to be tested.
 ## Initializing parameters...
 ## Computing initial parameter estimates...
 ## Keeping 100 iterations. We'll thin every 8 iterations.
@@ -338,29 +338,12 @@ write.table(FS_PFS_df,
 FS_PFS_df
 ```
 ```R
-##    SAMPLE ID          FS         PFS
-## 1       103C 0.029685039 0.014197279
-## 2       117C 0.029763780 0.013421769
-## 3       121C 0.073464567 0.038608844
-## 4       127C 0.037952756 0.016044218
-## 5        12C 0.069527559 0.037530612
-## 6       130C 0.041811024 0.020547619
-## 7       131C 0.070000000 0.037448980
-## 8       133C 0.061968504 0.032408163
-## 9       136C 0.043464567 0.018448980
-## 10      142C 0.052047244 0.028411565
-## 11      143C 0.069133858 0.034911565
-## 12      147C 0.041181102 0.018078231
-## 13      150C 0.045433071 0.020394558
-## 14     15518 0.073307087 0.039765306
-## 15      164C 0.056614173 0.030292517
-## 16        23 0.079212598 0.043227891
-## 17        25 0.060787402 0.029462585
-## 18       38C 0.044015748 0.018850340
-## 19       96C 0.029685039 0.013210884
-## 20     BWT22 0.003543307 0.002295918
-## 21      HS09 0.023858268 0.012996599
-## 22      HS10 0.008346457 0.004054422
+##   SAMPLE ID         FS        PFS
+## 1      133C 0.02811024 0.01214286
+## 2      142C 0.03078740 0.01504422
+## 3      150C 0.03220472 0.01426871
+## 4        23 0.04157480 0.01965986
+## 5        25 0.03188976 0.01413265
 ```
 
 ## Visualize
@@ -369,8 +352,8 @@ Plot a heatmap of the mean probability of response.
 plot(fit, show_rownames = TRUE)
 ```
 ```R
-## The 'threshold' filter has removed 6 categories:
-## IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a, IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a
+The 'threshold' filter has removed 8 categories:
+IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&CD154&!CD107a, IL2&IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a
 ```
-![image](https://user-images.githubusercontent.com/89667908/151276244-9dbe0ca9-de66-4425-9486-4e44e7c597a0.png)
+![image](https://user-images.githubusercontent.com/89667908/151413096-d42a8bfe-6319-43ba-9146-2f5a6a1de3f4.png)
 
