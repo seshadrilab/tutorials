@@ -47,6 +47,7 @@ grViz(diagram = "digraph flowchart {
   [7]: 'COMPASSResult/'
   ")
 ```
+
 You can achieve this directory structure by running the following command lines:
 
 ```{r}
@@ -79,21 +80,18 @@ library(COMPASS)
 ```
 
 # Load data
-
-The .xml and .fcs files for this dataset are stored in the Seshadri Lab shared 
-drive (LSR Fortessa/2021 Summer HAARVIVAC/20210902 HAARVIVAC Batch 4/).
-Download the .xml file and folder containing the .fcs files and drag into the 
-"data" folder of the RStudio project directory.
+Download the .xml file ([20200605_COVID_ICS-B3_KY3](https://drive.google.com/file/d/1PKZSkXykpjjkxtLMEApVszYCj2sPoKbZ/view?usp=sharing)) and folder containing the associated .fcs files ([20200605_COVID_ICS-B3-FCS](https://drive.google.com/drive/folders/1-Mi0L4BicrVMevLShaF4850G4VCCX2N2?usp=sharing)) and drag them into the "data" folder of the project directory.
 
 This data has been gated in FlowJo v9 and will be parsed using flowWorkspace.
+
 **FYI:** *When using FlowJo v9, the FlowJo workspace must be exported as an .xml file to create a flowjo_workspace object with the function open_flowjo_xml(). However, when using FlowJo v10, the FlowJo workspace can be loaded directly as a .wsp file using the same function open_flow_xml().*
 
 ```{r}
 # Location of XML file
-xml_path <- here::here("data/20211014_HAARVIVAC_B4V3_JP.xml")
+xml_path <- here::here("data/20200605_COVID_ICS-B3_KY3.xml")
 
 # Location of .fcs files
-fcs_subfolder <- here::here("data/20210902_HAARVIVAC_FCS_B4/")
+fcs_subfolder <- here::here("data/20200605_COVID_ICS-B3-FCS/")
 ```
 
 Create a flowjo_workspace object with the function open_flowjo_xml().
@@ -119,7 +117,7 @@ keywords2import <- c("EXPERIMENT NAME",
                        "$DATE",
                        "SAMPLE ID",
                        "PATIENT ID",
-                       "Stim",
+                       "STIM",
                        "WELL ID",
                        "PLATE NAME") 
 sampleGroup <- "Samples"
@@ -143,10 +141,10 @@ unique(pop_lists)
 Remove channels from flow data that are not used by gates.
 
 ```{r}
-gs <- gs_remove_redundant_channels(gs) # drop SSC-H, V655-A, V570-A
+gs <- gs_remove_redundant_channels(gs) # drop SSC-H
 ```
 
-Add names to all channels or fix their names.
+Add names to all channels or change their names.
 
 ```{r}
 dput(unname(pData(parameters(gh_pop_get_data(gs[[1]])))[,2]))
@@ -158,15 +156,42 @@ markernames(gs) <- markernames
 pData(parameters(gh_pop_get_data(gs[[1]])))[,c(1,2)]
 ```
 
-Plot gating tree.
+We want to run COMPASS on CD4+ and CD8+ T cells, but currently most of the gates are missing from the "8+" node. Let's grab the missing gates from the "NOT4+" node and add them under the "8+" node.
+
+```{r}
+gates_to_copy <- c("/Time/LD-3+/1419-3+/S/Lymph/NOT4+/107a",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/154", 
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL2",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL17",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL4513",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/TNF",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/CCR7+",
+                   "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/CD45RA+")
+
+for(path in gates_to_copy) {
+  gs_pop_add(gs, lapply(gs, gh_pop_get_gate, y=path),
+             parent = "/Time/LD-3+/1419-3+/S/Lymph/8+")
+}
+recompute(gs, "/Time/LD-3+/1419-3+/S/Lymph/8+")
+```
+
+Next, let's get rid of the "NOT4+" node and all of its descendants.
+
+```{r}
+gs_pop_remove(gs, "/Time/LD-3+/1419-3+/S/Lymph/NOT4+")
+```
+
+Plot the gating tree.
 
 ```{r, fig.width = 6, fig.height = 4}
 plot(gs, fontsize=15, bool=T)
 ```
 
+
+
 ## Save GatingSet
 
-This can take a while. 
+**Note:** this can take a while. 
 
 ```{r}
 save_gs(gs, here::here("out/GatingSet"))
@@ -183,20 +208,23 @@ single cell data are extracted and fed into the COMPASSContainer constructor.
 set.seed(123)
 
 # A regular expression to match a single node in the gating tree
-parent_node <- "CD4+"
+parent_node <- "4+"
 
 # A character identifying the subject id column in the GatingSet metadata
 id <- "SAMPLE ID"
 
-# markermap contains the output of markernames(gs)
 markernames(gs) 
+
+# markermap contains the output of markernames(gs)
 markermap <- list("IL2", "IL4_5_13", "IFNg", "TNFa", "IL17a", "CD154", "CD107a")
-names(markermap) <- paste0(parent_node, "/", c("IL2+", "IL4_5_13+", "IFNg+",
-                                               "TNFa+", "IL17a+", "CD154+", 
-                                               "CD107a+"))
+
+# Assign names to the list of markers based on the gate names
+names(markermap) <- paste0(parent_node, "/", c("IL2", "IL4513", "IFNG",
+                                               "TNF", "IL17", "154", 
+                                               "107a"))
 ```
 
-Construct the COMPASSContainer.
+Construct the COMPASSContainer. If the number of parent cells is less than countFilterThreshold, we drop that file (default is 5000 cells).
 
 ```{r}
 CC <- COMPASSContainerFromGatingSet(gs,
@@ -222,8 +250,8 @@ speed.
 
 ```{r}
 fit <- COMPASS(CC,
-               treatment = Stim == "S1",
-               control = Stim == "DMSO",
+               treatment = STIM == "Spike 1",
+               control = STIM == "DMSO",
                iterations = 100)
 ```
 
