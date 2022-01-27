@@ -16,7 +16,7 @@ For more information about COMPASS, please refer to the original manuscript and 
 # Installation
 
 This pipeline should be completed in R and RStudio. The following R packages are required for this tutorial:
-* [here](https://cran.r-project.org/package=here) (not necessary but makes file referencing easier)
+* [here](https://cran.r-project.org/package=here) 
 * [CytoML](https://bioconductor.org/packages/CytoML/)
 * [flowCore](https://bioconductor.org/packages/flowCore/)
 * [flowWorkspace](https://bioconductor.org/packages/flowWorkspace/)
