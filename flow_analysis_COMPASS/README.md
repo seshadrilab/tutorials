@@ -94,7 +94,9 @@ ws <- open_flowjo_xml(xml_path)
 A GatingSet holds a set of GatingHierarchy objects, representing a set of samples and the gating scheme associated with each.
 Look at the workspace metadata to choose which keywords to extract into the GatingSet. The flowjo_to_gatingset() function parses a flowJo Workspace to generate a GatingSet object.
 ```R
+# Look at all of the keywords
 names(fj_ws_get_keywords(ws, 117)) 
+# Choose which keywords to keep
 keywords2import <- c("EXPERIMENT NAME",
                        "$DATE",
                        "SAMPLE ID",
