@@ -1,4 +1,4 @@
-# Flow_Analysis_COMPASS
+# Flow Cytometry R Analysis Tutorial: COMPASS
 
 A tutorial for analyzing flow cytometry data in R using COMPASS (Combinatorial Polyfunctionality Analysis of Single Cells). 
 
