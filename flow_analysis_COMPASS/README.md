@@ -352,8 +352,8 @@ Plot a heatmap of the mean probability of response.
 plot(fit, show_rownames = TRUE)
 ```
 ```R
-The 'threshold' filter has removed 8 categories:
-IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&CD154&!CD107a, IL2&IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a
+## The 'threshold' filter has removed 8 categories:
+## IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&IFNg&!TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a, !IL2&!IL4_5_13&!IFNg&!TNFa&!IL17a&CD154&!CD107a, IL2&IL4_5_13&!IFNg&!TNFa&!IL17a&!CD154&!CD107a, IL2&!IL4_5_13&!IFNg&TNFa&!IL17a&!CD154&!CD107a, !IL2&IL4_5_13&!IFNg&!TNFa&IL17a&!CD154&!CD107a
 ```
 ![image](https://user-images.githubusercontent.com/89667908/151413096-d42a8bfe-6319-43ba-9146-2f5a6a1de3f4.png)
 
