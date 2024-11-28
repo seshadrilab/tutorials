@@ -1,6 +1,6 @@
 ---
 title: "Flow Analysis COMPASS Tutorial"
-author: "Jolie Phan"
+author: "Jolie Phan, Emma Bishop"
 date: "version `r format(Sys.time(), '%B %d, %Y')`"
 output:
   html_document:
@@ -77,6 +77,7 @@ library(CytoML)
 library(flowCore)
 library(flowWorkspace)
 library(COMPASS)
+library(tidyverse)
 ```
 
 # Load data
@@ -199,62 +200,144 @@ plot(gs, fontsize=15, bool=T)
 save_gs(gs, here::here("out/GatingSet"))
 ```
 
-# Create a COMPASSContainer
 
-A COMPASSContainer is the data structure used to hold data from an ICS experiment.
-The input for this code is a GatingSet or a GatingSetList. Counts, metadata, and 
-single cell data are extracted and fed into the COMPASSContainer constructor.
+# Get tabular data from the GatingSet
+
+The following steps were inspired from advice in the COMPASS [issue #81](https://github.com/RGLab/COMPASS/issues/81#issuecomment-2484533481) thread.
+
 
 ```{r}
-# Set the seed
-set.seed(123)
+# Load GatingSet if needed
+gs <- load_gs(here::here("out/GatingSet"))
+```
 
-# A regular expression to match a single node in the gating tree
-parent_node <- "4+"
 
-# A character identifying the subject id column in the GatingSet metadata
-id <- "SAMPLE ID"
+## Get matrices of expression data
 
-markernames(gs) 
+Extract metadata and take a look
 
-# markermap contains the output of markernames(gs)
+```{r}
+metadata <- pData(gs) %>%
+  mutate(sampleName = rownames(.))
+
+head(metadata)
+```
+
+Separate the Spike 1 stimmed and DMSO samples
+
+```{r}
+sp1_samples <- metadata %>%
+  filter(STIM == "Spike 1") %>%
+  pull(sampleName)
+spike1 <- gs[sp1_samples]
+
+dmso_samples <- metadata %>%
+  filter(STIM == "DMSO") %>%
+  pull(sampleName)
+dmso <- gs[dmso_samples]
+```
+
+Extract data for the "CD4+" population only. These are 'cytoset' objects, which are a collection of 'cytoframe's.
+
+```{r}
+spike1_cd4 <- gs_pop_get_data(spike1, "4+")  # Using "+4" node name
+dmso_cd4 <- gs_pop_get_data(dmso, "4+")
+```
+
+We can see the sample names in the object like so:
+
+```{r}
+sampleNames(dmso_cd4)
+```
+
+Let's take a look at one of these 'cytoframes', which are similar to a matrix of expression values.
+
+```{r}
+samplename <- "114716.fcs_445737"
+cytoframe1 <- dmso_cd4[[samplename]]
+head(cytoframe1)
+```
+
+Note that we have gates we don't need for our boolean combinations, like time and forward/side scatter (Time, FSC-A, FSC-H, SSC-A). We will get rid of these below.
+
+Get a list of expression matrices for stim and unstim from the cytoset/cytoframe objects.
+
+```{r}
+markernames <- c("Time", "FSC-A", "FSC-H", "SSC-A", "CD8b", "TNFa", "CD107a",
+                 "CD154", "CD3", "IL2", "CD4", "IL17a", "IL4_5_13", "CD14_19",
+                 "CCR7", "CD38", "LD", "IFNg", "CD45RA", "HLADR")
+
 markermap <- list("IL2", "IL4_5_13", "IFNg", "TNFa", "IL17a", "CD154", "CD107a")
 
-# Assign names to the list of markers based on the gate names
-names(markermap) <- paste0(parent_node, "/", c("IL2", "IL4513", "IFNG",
-                                               "TNF", "IL17", "154", 
-                                               "107a"))
+get_mtx_list <- function(cytoset_obj) {
+  outlist = list()
+  for (i in sampleNames(cytoset_obj)) {
+    sub_cf <- get_cytoframe_from_cs(cytoset_obj, i)  # Extract cytoframe from cytoset
+    out <- exprs(sub_cf)  # Get expression values as a matrix
+    colnames(out) <- markernames  # Rename columns (e.g. <V450-A> becomes IFNg)
+    out[out < 0] <- 0  # Replace negative numbers with 0 for CellCounts() later
+    out <- out[, colnames(out) %in% markermap]  # Only keep markers we want boolean combos of
+    outlist[[i]] <- out
+  }
+  return(outlist)
+}
+
+spikelist <- get_mtx_list(spike1_cd4)
+dmsolist <- get_mtx_list(dmso_cd4)
 ```
 
-Construct the COMPASSContainer. If the number of parent cells is less than countFilterThreshold, we drop that file (default is 5000 cells).
+Now we have named lists of matrices of expression data, using sample names as indices
 
 ```{r}
-CC <- COMPASSContainerFromGatingSet(gs,
-                                    node = parent_node,
-                                    individual_id = id,
-                                    mp = markermap,
-                                    countFilterThreshold = 5000)
+names(dmsolist)
 ```
 
-Look at some basic info about our COMPASSContainer.
-
 ```{r}
-CC
+head(dmsolist[[1]])
 ```
 
-# Run COMPASS
-
-Fit the COMPASS model using the COMPASSContainer. To fit the COMPASS model, we 
-need to specify how to identify the samples that are our treatment condition and 
-our control condition. Here, we will run COMPASS on the samples stimmed by spike
-1 with DMSO as our negative control. For now, let's just do 100 iterations for 
-speed.
+Save
 
 ```{r}
-fit <- COMPASS(CC,
-               treatment = STIM == "Spike 1",
-               control = STIM == "DMSO",
-               iterations = 100)
+saveRDS(spikelist, here::here("out/spikelist.rds"))
+saveRDS(dmsolist, here::here("out/dmsolist.rds"))
+```
+
+## Create boolean combinations
+
+```{r}
+spikelist <- readRDS(here::here("out/spikelist.rds"))
+dmsolist <- readRDS(here::here("out/dmsolist.rds"))
+```
+
+Can take a little while
+
+```{r}
+k = 7  # Seven markers
+
+n_s <- CellCounts(spikelist, Combinations(k)) # Stimmed data
+
+n_u <- CellCounts(dmsolist, Combinations(k)) # Unstimmed data
+```
+
+Save count matrices and metadata
+
+```{r}
+saveRDS(n_s, here::here("out/n_s.rds"))
+saveRDS(n_u, here::here("out/n_u.rds"))
+saveRDS(metadata, here::here("out/metadata.rds"))
+```
+
+
+# Run SimpleCOMPASS
+
+Fits a polyfunctionality response model to our data.
+
+```{r}
+fit = COMPASS::SimpleCOMPASS(n_s = n_s,
+                             n_u = n_u,
+                             meta = metadata,
+                             individual_id = "sampleName")
 ```
 
 Save the COMPASS run output.
@@ -268,13 +351,13 @@ Save the Functionality and Polyfunctionality Scores.
 ```{r}
 FS <- FunctionalityScore(fit)
 FS_df <- data.frame(tmp = names(FS), FS = FS)
-colnames(FS_df) <- c("SAMPLE ID", "FS")
+colnames(FS_df) <- c("sampleName", "FS")
 
 PFS <- PolyfunctionalityScore(fit)
 PFS_df <- data.frame(tmp = names(PFS), PFS = PFS)
-colnames(PFS_df) <- c("SAMPLE ID", "PFS")
+colnames(PFS_df) <- c("sampleName", "PFS")
 
-FS_PFS_df <- merge(FS_df, PFS_df, by = "SAMPLE ID")
+FS_PFS_df <- merge(FS_df, PFS_df, by = "sampleName")
 write.table(FS_PFS_df,
             file = file.path(here::here("out/COMPASSResult"), "FS_PFS.tsv"),
             sep = "\t", row.names = FALSE, quote = FALSE)
@@ -288,4 +371,5 @@ Plot a heatmap of the mean probability of response.
 ```{r, fig.width = 6, fig.height = 4}
 plot(fit, show_rownames = TRUE)
 ```
+
 
