@@ -10,6 +10,7 @@ output:
       collapsed: no
 editor_options:
   chunk_output_type: console
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
@@ -48,9 +49,9 @@ grViz(diagram = "digraph flowchart {
   ")
 ```
 
-You can achieve this directory structure by running the following command lines:
+You can achieve this directory structure by running the following commands:
 
-```{r}
+```{r, message=FALSE}
 if(!dir.exists(here::here("data"))) {
   cat(sprintf("Creating folder %s\n", here::here("data")))
   dir.create(here::here("data"), recursive = T)
@@ -71,7 +72,7 @@ if(!dir.exists(here::here("out/COMPASSResult"))) {
 
 # Load libraries
 
-```{r}
+```{r, message=FALSE}
 library(here)
 library(CytoML)
 library(flowCore)
@@ -85,7 +86,7 @@ Download the .xml file and folder containing the associated .fcs files (see the 
 
 This data has been gated in FlowJo v9 and will be parsed using flowWorkspace.
 
-**FYI:** *When using FlowJo v9, the FlowJo workspace must be exported as an .xml file to create a flowjo_workspace object with the function open_flowjo_xml(). However, when using FlowJo v10, the FlowJo workspace can be loaded directly as a .wsp file using the same function open_flow_xml().*
+**FYI:** When using FlowJo v9, the FlowJo workspace must be exported as an .xml file to create a flowjo_workspace object with the function open_flowjo_xml(). However, when using FlowJo v10, the FlowJo workspace can be loaded directly as a .wsp file using the same function open_flow_xml().
 
 ```{r}
 # Location of XML file
@@ -189,8 +190,6 @@ Plot the gating tree.
 ```{r, fig.width = 6, fig.height = 4}
 plot(gs, fontsize=15, bool=T)
 ```
-
-
 
 ## Save GatingSet
 
@@ -313,11 +312,9 @@ dmsolist <- readRDS(here::here("out/dmsolist.rds"))
 Can take a little while
 
 ```{r}
-k = 7  # Seven markers
-
-n_s <- CellCounts(spikelist, Combinations(k)) # Stimmed data
-
-n_u <- CellCounts(dmsolist, Combinations(k)) # Unstimmed data
+# Seven markers
+n_s <- CellCounts(spikelist, Combinations(7)) # Stimmed data
+n_u <- CellCounts(dmsolist, Combinations(7)) # Unstimmed data
 ```
 
 Save count matrices and metadata
@@ -331,19 +328,32 @@ saveRDS(metadata, here::here("out/metadata.rds"))
 
 # Run SimpleCOMPASS
 
-Fits a polyfunctionality response model to our data.
+```{r}
+n_s <- readRDS(here::here("out/n_s.rds"))
+n_u <- readRDS(here::here("out/n_u.rds"))
+metadata <- readRDS(here::here("out/metadata.rds"))
+```
 
 ```{r}
+# Use subject ID as rownames
+rownames(n_s) <- c("23", "25", "133C", "142C", "150C")
+rownames(n_u) <- c("23", "25", "133C", "142C", "150C")
+```
+
+Fits a polyfunctionality response model to our data.
+
+```{r, message=FALSE}
 fit = COMPASS::SimpleCOMPASS(n_s = n_s,
                              n_u = n_u,
                              meta = metadata,
-                             individual_id = "sampleName")
+                             individual_id = "SAMPLE ID")
 ```
 
 Save the COMPASS run output.
 
 ```{r}
 saveRDS(fit, file.path(here::here("out/COMPASSResult"), "COMPASSResult.rds"))
+# fit <- readRDS(file.path(here::here("out/COMPASSResult"), "COMPASSResult.rds"))
 ```
 
 Save the Functionality and Polyfunctionality Scores.
@@ -368,8 +378,7 @@ FS_PFS_df
 
 Plot a heatmap of the mean probability of response.
 
-```{r, fig.width = 6, fig.height = 4}
+```{r, fig.width = 6, fig.height = 4, message=FALSE}
 plot(fit, show_rownames = TRUE)
 ```
-
 
