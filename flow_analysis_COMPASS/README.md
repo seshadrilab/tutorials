@@ -10,7 +10,7 @@ project and set up your project directory as follows.
 
 The `data/` folder should contain all `.xml` and `.fcs` files and the
 `out/` folder will contain the GatingSet and all COMPASS outputs.
-![image](https://private-user-images.githubusercontent.com/46635347/392623484-ddd02c3a-6b4b-41a5-8fa1-ad0d6801efbe.png)
+![image](https://github.com/seshadrilab/tutorials/blob/main/flow_analysis_COMPASS/README_files/figure-gfm/dir_structure.png?raw=true)
 
 You can achieve this directory structure by running the following
 commands:
@@ -263,7 +263,8 @@ Plot the gating tree.
 plot(gs, fontsize=15, bool=T)
 ```
 
-![](/home/emmabishop/workspace/tutorials/flow_analysis_COMPASS/README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![image](https://github.com/seshadrilab/tutorials/blob/main/flow_analysis_COMPASS/README_files/figure-gfm/unnamed-chunk-11-1.png?raw=true)
+
 
 ## Save GatingSet
 
@@ -500,4 +501,4 @@ Plot a heatmap of the mean probability of response.
 plot(fit, show_rownames = TRUE)
 ```
 
-![](/home/emmabishop/workspace/tutorials/flow_analysis_COMPASS/README_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+![image](https://github.com/seshadrilab/tutorials/blob/main/flow_analysis_COMPASS/README_files/figure-gfm/unnamed-chunk-31-1.png?raw=true)
