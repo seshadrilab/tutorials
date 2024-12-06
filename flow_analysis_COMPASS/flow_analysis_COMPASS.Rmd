@@ -343,6 +343,8 @@ rownames(n_u) <- c("23", "25", "133C", "142C", "150C")
 Fits a polyfunctionality response model to our data.
 
 ```{r, message=FALSE}
+set.seed(123)
+
 fit = COMPASS::SimpleCOMPASS(n_s = n_s,
                              n_u = n_u,
                              meta = metadata,
@@ -378,7 +380,7 @@ FS_PFS_df
 
 Plot a heatmap of the mean probability of response.
 
-```{r, fig.width = 6, fig.height = 4, message=FALSE}
+```{r, fig.width = 6, fig.height = 4}
 plot(fit, show_rownames = TRUE)
 ```
 
