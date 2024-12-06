@@ -1,7 +1,7 @@
 Flow Analysis COMPASS Tutorial
 ================
 Jolie Phan, Emma Bishop
-version December 04, 2024
+version December 06, 2024
 
 # Directory structure
 
@@ -97,48 +97,69 @@ Workspace to generate a GatingSet object.
 names(fj_ws_get_keywords(ws, 117)) 
 ```
 
-    ##   [1] "$BEGINANALYSIS"               "$BEGINDATA"                   "$BEGINSTEXT"                  "$BTIM"                        "$BYTEORD"                     "$DATATYPE"                   
-    ##   [7] "$DATE"                        "$ENDANALYSIS"                 "$ENDDATA"                     "$ENDSTEXT"                    "$ETIM"                        "$FIL"                        
-    ##  [13] "$INST"                        "$MODE"                        "$NEXTDATA"                    "$PAR"                         "$P1B"                         "$P1E"                        
-    ##  [19] "$P1G"                         "$P1N"                         "$P1R"                         "$P2B"                         "$P2E"                         "$P2G"                        
-    ##  [25] "$P2N"                         "$P2R"                         "$P2V"                         "$P3B"                         "$P3E"                         "$P3G"                        
-    ##  [31] "$P3N"                         "$P3R"                         "$P3V"                         "$P4B"                         "$P4E"                         "$P4G"                        
-    ##  [37] "$P4N"                         "$P4R"                         "$P4V"                         "$P5B"                         "$P5E"                         "$P5G"                        
-    ##  [43] "$P5N"                         "$P5R"                         "$P5V"                         "$P6B"                         "$P6E"                         "$P6G"                        
-    ##  [49] "$P6N"                         "$P6R"                         "$P6S"                         "$P6V"                         "$P7B"                         "$P7E"                        
-    ##  [55] "$P7G"                         "$P7N"                         "$P7R"                         "$P7S"                         "$P7V"                         "$P8B"                        
-    ##  [61] "$P8E"                         "$P8G"                         "$P8N"                         "$P8R"                         "$P8S"                         "$P8V"                        
-    ##  [67] "$P9B"                         "$P9E"                         "$P9G"                         "$P9N"                         "$P9R"                         "$P9S"                        
-    ##  [73] "$P9V"                         "$P10B"                        "$P10E"                        "$P10G"                        "$P10N"                        "$P10R"                       
-    ##  [79] "$P10S"                        "$P10V"                        "$P11B"                        "$P11E"                        "$P11G"                        "$P11N"                       
-    ##  [85] "$P11R"                        "$P11S"                        "$P11V"                        "$P12B"                        "$P12E"                        "$P12G"                       
-    ##  [91] "$P12N"                        "$P12R"                        "$P12S"                        "$P12V"                        "$P13B"                        "$P13E"                       
-    ##  [97] "$P13G"                        "$P13N"                        "$P13R"                        "$P13S"                        "$P13V"                        "$P14B"                       
-    ## [103] "$P14E"                        "$P14G"                        "$P14N"                        "$P14R"                        "$P14S"                        "$P14V"                       
-    ## [109] "$P15B"                        "$P15E"                        "$P15G"                        "$P15N"                        "$P15R"                        "$P15S"                       
-    ## [115] "$P15V"                        "$P16B"                        "$P16E"                        "$P16G"                        "$P16N"                        "$P16R"                       
-    ## [121] "$P16S"                        "$P16V"                        "$P17B"                        "$P17E"                        "$P17G"                        "$P17N"                       
-    ## [127] "$P17R"                        "$P17S"                        "$P17V"                        "$P18B"                        "$P18E"                        "$P18G"                       
-    ## [133] "$P18N"                        "$P18R"                        "$P18S"                        "$P18V"                        "$P19B"                        "$P19E"                       
-    ## [139] "$P19G"                        "$P19N"                        "$P19R"                        "$P19S"                        "$P19V"                        "$P20B"                       
-    ## [145] "$P20E"                        "$P20G"                        "$P20N"                        "$P20R"                        "$P20S"                        "$P20V"                       
-    ## [151] "$P21B"                        "$P21E"                        "$P21G"                        "$P21N"                        "$P21R"                        "$P21S"                       
-    ## [157] "$P21V"                        "$SRC"                         "$SYS"                         "$TIMESTEP"                    "$TOT"                         "AUTOBS"                      
-    ## [163] "CREATOR"                      "CST BASELINE DATE"            "CST BEADS EXPIRED"            "CST BEADS LOT ID"             "CST PERFORMANCE EXPIRED"      "CST REGULATORY STATUS"       
-    ## [169] "CST SETUP DATE"               "CST SETUP STATUS"             "CYTOMETER CONFIG CREATE DATE" "CYTOMETER CONFIG NAME"        "EXPERIMENT NAME"              "EXPORT TIME"                 
-    ## [175] "EXPORT USER NAME"             "FJ_$TIMESTEP"                 "FSC ASF"                      "GUID"                         "PLATE ID"                     "PLATE NAME"                  
-    ## [181] "P1BS"                         "P1MS"                         "P2BS"                         "P2DISPLAY"                    "P2MS"                         "P3BS"                        
-    ## [187] "P3DISPLAY"                    "P3MS"                         "P4BS"                         "P4DISPLAY"                    "P4MS"                         "P5BS"                        
-    ## [193] "P5DISPLAY"                    "P5MS"                         "P6BS"                         "P6DISPLAY"                    "P6MS"                         "P7BS"                        
-    ## [199] "P7DISPLAY"                    "P7MS"                         "P8BS"                         "P8DISPLAY"                    "P8MS"                         "P9BS"                        
-    ## [205] "P9DISPLAY"                    "P9MS"                         "P10BS"                        "P10DISPLAY"                   "P10MS"                        "P11BS"                       
-    ## [211] "P11DISPLAY"                   "P11MS"                        "P12BS"                        "P12DISPLAY"                   "P12MS"                        "P13BS"                       
-    ## [217] "P13DISPLAY"                   "P13MS"                        "P14BS"                        "P14DISPLAY"                   "P14MS"                        "P15BS"                       
-    ## [223] "P15DISPLAY"                   "P15MS"                        "P16BS"                        "P16DISPLAY"                   "P16MS"                        "P17BS"                       
-    ## [229] "P17DISPLAY"                   "P17MS"                        "P18BS"                        "P18DISPLAY"                   "P18MS"                        "P19BS"                       
-    ## [235] "P19DISPLAY"                   "P19MS"                        "P20BS"                        "P20DISPLAY"                   "P20MS"                        "P21BS"                       
-    ## [241] "P21DISPLAY"                   "P21MS"                        "SETTINGS"                     "SPILL"                        "STIM"                         "THRESHOLD"                   
-    ## [247] "TUBE NAME"                    "WELL ID"                      "WINDOW EXTENSION"
+    ##   [1] "$BEGINANALYSIS"               "$BEGINDATA"                   "$BEGINSTEXT"                  "$BTIM"                       
+    ##   [5] "$BYTEORD"                     "$DATATYPE"                    "$DATE"                        "$ENDANALYSIS"                
+    ##   [9] "$ENDDATA"                     "$ENDSTEXT"                    "$ETIM"                        "$FIL"                        
+    ##  [13] "$INST"                        "$MODE"                        "$NEXTDATA"                    "$PAR"                        
+    ##  [17] "$P1B"                         "$P1E"                         "$P1G"                         "$P1N"                        
+    ##  [21] "$P1R"                         "$P2B"                         "$P2E"                         "$P2G"                        
+    ##  [25] "$P2N"                         "$P2R"                         "$P2V"                         "$P3B"                        
+    ##  [29] "$P3E"                         "$P3G"                         "$P3N"                         "$P3R"                        
+    ##  [33] "$P3V"                         "$P4B"                         "$P4E"                         "$P4G"                        
+    ##  [37] "$P4N"                         "$P4R"                         "$P4V"                         "$P5B"                        
+    ##  [41] "$P5E"                         "$P5G"                         "$P5N"                         "$P5R"                        
+    ##  [45] "$P5V"                         "$P6B"                         "$P6E"                         "$P6G"                        
+    ##  [49] "$P6N"                         "$P6R"                         "$P6S"                         "$P6V"                        
+    ##  [53] "$P7B"                         "$P7E"                         "$P7G"                         "$P7N"                        
+    ##  [57] "$P7R"                         "$P7S"                         "$P7V"                         "$P8B"                        
+    ##  [61] "$P8E"                         "$P8G"                         "$P8N"                         "$P8R"                        
+    ##  [65] "$P8S"                         "$P8V"                         "$P9B"                         "$P9E"                        
+    ##  [69] "$P9G"                         "$P9N"                         "$P9R"                         "$P9S"                        
+    ##  [73] "$P9V"                         "$P10B"                        "$P10E"                        "$P10G"                       
+    ##  [77] "$P10N"                        "$P10R"                        "$P10S"                        "$P10V"                       
+    ##  [81] "$P11B"                        "$P11E"                        "$P11G"                        "$P11N"                       
+    ##  [85] "$P11R"                        "$P11S"                        "$P11V"                        "$P12B"                       
+    ##  [89] "$P12E"                        "$P12G"                        "$P12N"                        "$P12R"                       
+    ##  [93] "$P12S"                        "$P12V"                        "$P13B"                        "$P13E"                       
+    ##  [97] "$P13G"                        "$P13N"                        "$P13R"                        "$P13S"                       
+    ## [101] "$P13V"                        "$P14B"                        "$P14E"                        "$P14G"                       
+    ## [105] "$P14N"                        "$P14R"                        "$P14S"                        "$P14V"                       
+    ## [109] "$P15B"                        "$P15E"                        "$P15G"                        "$P15N"                       
+    ## [113] "$P15R"                        "$P15S"                        "$P15V"                        "$P16B"                       
+    ## [117] "$P16E"                        "$P16G"                        "$P16N"                        "$P16R"                       
+    ## [121] "$P16S"                        "$P16V"                        "$P17B"                        "$P17E"                       
+    ## [125] "$P17G"                        "$P17N"                        "$P17R"                        "$P17S"                       
+    ## [129] "$P17V"                        "$P18B"                        "$P18E"                        "$P18G"                       
+    ## [133] "$P18N"                        "$P18R"                        "$P18S"                        "$P18V"                       
+    ## [137] "$P19B"                        "$P19E"                        "$P19G"                        "$P19N"                       
+    ## [141] "$P19R"                        "$P19S"                        "$P19V"                        "$P20B"                       
+    ## [145] "$P20E"                        "$P20G"                        "$P20N"                        "$P20R"                       
+    ## [149] "$P20S"                        "$P20V"                        "$P21B"                        "$P21E"                       
+    ## [153] "$P21G"                        "$P21N"                        "$P21R"                        "$P21S"                       
+    ## [157] "$P21V"                        "$SRC"                         "$SYS"                         "$TIMESTEP"                   
+    ## [161] "$TOT"                         "AUTOBS"                       "CREATOR"                      "CST BASELINE DATE"           
+    ## [165] "CST BEADS EXPIRED"            "CST BEADS LOT ID"             "CST PERFORMANCE EXPIRED"      "CST REGULATORY STATUS"       
+    ## [169] "CST SETUP DATE"               "CST SETUP STATUS"             "CYTOMETER CONFIG CREATE DATE" "CYTOMETER CONFIG NAME"       
+    ## [173] "EXPERIMENT NAME"              "EXPORT TIME"                  "EXPORT USER NAME"             "FJ_$TIMESTEP"                
+    ## [177] "FSC ASF"                      "GUID"                         "PLATE ID"                     "PLATE NAME"                  
+    ## [181] "P1BS"                         "P1MS"                         "P2BS"                         "P2DISPLAY"                   
+    ## [185] "P2MS"                         "P3BS"                         "P3DISPLAY"                    "P3MS"                        
+    ## [189] "P4BS"                         "P4DISPLAY"                    "P4MS"                         "P5BS"                        
+    ## [193] "P5DISPLAY"                    "P5MS"                         "P6BS"                         "P6DISPLAY"                   
+    ## [197] "P6MS"                         "P7BS"                         "P7DISPLAY"                    "P7MS"                        
+    ## [201] "P8BS"                         "P8DISPLAY"                    "P8MS"                         "P9BS"                        
+    ## [205] "P9DISPLAY"                    "P9MS"                         "P10BS"                        "P10DISPLAY"                  
+    ## [209] "P10MS"                        "P11BS"                        "P11DISPLAY"                   "P11MS"                       
+    ## [213] "P12BS"                        "P12DISPLAY"                   "P12MS"                        "P13BS"                       
+    ## [217] "P13DISPLAY"                   "P13MS"                        "P14BS"                        "P14DISPLAY"                  
+    ## [221] "P14MS"                        "P15BS"                        "P15DISPLAY"                   "P15MS"                       
+    ## [225] "P16BS"                        "P16DISPLAY"                   "P16MS"                        "P17BS"                       
+    ## [229] "P17DISPLAY"                   "P17MS"                        "P18BS"                        "P18DISPLAY"                  
+    ## [233] "P18MS"                        "P19BS"                        "P19DISPLAY"                   "P19MS"                       
+    ## [237] "P20BS"                        "P20DISPLAY"                   "P20MS"                        "P21BS"                       
+    ## [241] "P21DISPLAY"                   "P21MS"                        "SETTINGS"                     "SPILL"                       
+    ## [245] "STIM"                         "THRESHOLD"                    "TUBE NAME"                    "WELL ID"                     
+    ## [249] "WINDOW EXTENSION"
 
 ``` r
 # Choose which keywords to keep
@@ -168,14 +189,16 @@ unique(pop_lists)
 ```
 
     ## [[1]]
-    ##  [1] "root"                                      "/Time"                                     "/Time/LD-3+"                               "/Time/LD-3+/1419-3+"                      
-    ##  [5] "/Time/LD-3+/1419-3+/S"                     "/Time/LD-3+/1419-3+/S/Lymph"               "/Time/LD-3+/1419-3+/S/Lymph/4+"            "/Time/LD-3+/1419-3+/S/Lymph/4+/107a"      
-    ##  [9] "/Time/LD-3+/1419-3+/S/Lymph/4+/154"        "/Time/LD-3+/1419-3+/S/Lymph/4+/CCR7+"      "/Time/LD-3+/1419-3+/S/Lymph/4+/CD45RA+"    "/Time/LD-3+/1419-3+/S/Lymph/4+/IFNG"      
-    ## [13] "/Time/LD-3+/1419-3+/S/Lymph/4+/IL2"        "/Time/LD-3+/1419-3+/S/Lymph/4+/IL17"       "/Time/LD-3+/1419-3+/S/Lymph/4+/IL4513"     "/Time/LD-3+/1419-3+/S/Lymph/4+/TNF"       
-    ## [17] "/Time/LD-3+/1419-3+/S/Lymph/8+"            "/Time/LD-3+/1419-3+/S/Lymph/8+/IFNG"       "/Time/LD-3+/1419-3+/S/Lymph/CD38+"         "/Time/LD-3+/1419-3+/S/Lymph/HLADR+"       
-    ## [21] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+"         "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/107a"    "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/154"     "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/CCR7+"  
-    ## [25] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/CD45RA+" "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IFNG"    "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL2"     "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL17"   
-    ## [29] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL4513"  "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/TNF"
+    ##  [1] "root"                                      "/Time"                                     "/Time/LD-3+"                              
+    ##  [4] "/Time/LD-3+/1419-3+"                       "/Time/LD-3+/1419-3+/S"                     "/Time/LD-3+/1419-3+/S/Lymph"              
+    ##  [7] "/Time/LD-3+/1419-3+/S/Lymph/4+"            "/Time/LD-3+/1419-3+/S/Lymph/4+/107a"       "/Time/LD-3+/1419-3+/S/Lymph/4+/154"       
+    ## [10] "/Time/LD-3+/1419-3+/S/Lymph/4+/CCR7+"      "/Time/LD-3+/1419-3+/S/Lymph/4+/CD45RA+"    "/Time/LD-3+/1419-3+/S/Lymph/4+/IFNG"      
+    ## [13] "/Time/LD-3+/1419-3+/S/Lymph/4+/IL2"        "/Time/LD-3+/1419-3+/S/Lymph/4+/IL17"       "/Time/LD-3+/1419-3+/S/Lymph/4+/IL4513"    
+    ## [16] "/Time/LD-3+/1419-3+/S/Lymph/4+/TNF"        "/Time/LD-3+/1419-3+/S/Lymph/8+"            "/Time/LD-3+/1419-3+/S/Lymph/8+/IFNG"      
+    ## [19] "/Time/LD-3+/1419-3+/S/Lymph/CD38+"         "/Time/LD-3+/1419-3+/S/Lymph/HLADR+"        "/Time/LD-3+/1419-3+/S/Lymph/NOT4+"        
+    ## [22] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/107a"    "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/154"     "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/CCR7+"  
+    ## [25] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/CD45RA+" "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IFNG"    "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL2"    
+    ## [28] "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL17"    "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL4513"  "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/TNF"
 
 Remove channels from flow data that are not used by gates.
 
@@ -265,7 +288,6 @@ plot(gs, fontsize=15, bool=T)
 
 ![image](https://github.com/seshadrilab/tutorials/blob/main/flow_analysis_COMPASS/README_files/figure-gfm/unnamed-chunk-11-1.png?raw=true)
 
-
 ## Save GatingSet
 
 **Note:** this can take a while.
@@ -346,13 +368,20 @@ cytoframe1 <- dmso_cd4[[samplename]]
 head(cytoframe1)
 ```
 
-    ##       Time     FSC-A  FSC-H    SSC-A <B710-A> <B515-A>  <G780-A> <G660-A> <G610-A>  <G575-A> <R780-A>  <R710-A> <R660-A>  <V780-A> <V710-A> <V610-A> <V510-A> <V450-A>  <U730-A>  <U395-A>
-    ## [1,] 2.441 122933.04 111005 22292.88 912.8039 605.4547 220.27991 560.6566 3060.245  395.8604 1715.682  577.2411 731.5930  654.3718 2341.164 1162.096 1066.730 757.4949 1392.2936  691.1917
-    ## [2,] 2.441 126327.96 110188 34016.13 597.5212 732.2466 190.20494 873.4103 2982.977  410.8742 1868.221 1142.5469 436.4252 1132.8197 1025.377 1015.737 1221.067 837.0206  779.2865  578.2829
-    ## [3,] 2.442  93704.20  80479 30572.67 897.9616 617.5473  78.86456 440.2558 3033.829  995.1781 2014.507  783.3704 659.7129 1403.7660 2366.746 1613.703 1262.292 405.5316 2563.0171  568.5731
-    ## [4,] 2.447 109862.56  95799 24374.79 316.1867 428.8226 893.86353 997.1701 3053.399  976.4500 1855.618  381.2457 654.4659  889.6058 2180.418 2253.460 1215.396 645.0524 2731.7053 1013.0549
-    ## [5,] 2.449  82438.72  70628 40428.90 766.8693 484.2879 911.77679 915.0909 3070.636  630.3830 2046.922 1543.0740 401.9236  890.8912 2353.598 1283.655 1216.928 919.3452 2743.6641  768.1965
-    ## [6,] 2.453  80187.60  68863 36685.29 469.5395 537.9316 433.60690 789.3820 3119.851 1252.5963 2124.699 1185.0879 831.7593  580.8347 1753.941 1515.809 1387.849 771.2418  884.6489 1112.8729
+    ##       Time     FSC-A  FSC-H    SSC-A <B710-A> <B515-A>  <G780-A> <G660-A> <G610-A>  <G575-A> <R780-A>  <R710-A> <R660-A>  <V780-A> <V710-A>
+    ## [1,] 2.441 122933.04 111005 22292.88 912.8039 605.4547 220.27991 560.6566 3060.245  395.8604 1715.682  577.2411 731.5930  654.3718 2341.164
+    ## [2,] 2.441 126327.96 110188 34016.13 597.5212 732.2466 190.20494 873.4103 2982.977  410.8742 1868.221 1142.5469 436.4252 1132.8197 1025.377
+    ## [3,] 2.442  93704.20  80479 30572.67 897.9616 617.5473  78.86456 440.2558 3033.829  995.1781 2014.507  783.3704 659.7129 1403.7660 2366.746
+    ## [4,] 2.447 109862.56  95799 24374.79 316.1867 428.8226 893.86353 997.1701 3053.399  976.4500 1855.618  381.2457 654.4659  889.6058 2180.418
+    ## [5,] 2.449  82438.72  70628 40428.90 766.8693 484.2879 911.77679 915.0909 3070.636  630.3830 2046.922 1543.0740 401.9236  890.8912 2353.598
+    ## [6,] 2.453  80187.60  68863 36685.29 469.5395 537.9316 433.60690 789.3820 3119.851 1252.5963 2124.699 1185.0879 831.7593  580.8347 1753.941
+    ##      <V610-A> <V510-A> <V450-A>  <U730-A>  <U395-A>
+    ## [1,] 1162.096 1066.730 757.4949 1392.2936  691.1917
+    ## [2,] 1015.737 1221.067 837.0206  779.2865  578.2829
+    ## [3,] 1613.703 1262.292 405.5316 2563.0171  568.5731
+    ## [4,] 2253.460 1215.396 645.0524 2731.7053 1013.0549
+    ## [5,] 1283.655 1216.928 919.3452 2743.6641  768.1965
+    ## [6,] 1515.809 1387.849 771.2418  884.6489 1112.8729
 
 Note that we have gates we don’t need for our boolean combinations, like
 time and forward/side scatter (Time, FSC-A, FSC-H, SSC-A). We will get
@@ -453,6 +482,8 @@ rownames(n_u) <- c("23", "25", "133C", "142C", "150C")
 Fits a polyfunctionality response model to our data.
 
 ``` r
+set.seed(123)
+
 fit = COMPASS::SimpleCOMPASS(n_s = n_s,
                              n_u = n_u,
                              meta = metadata,
@@ -500,5 +531,8 @@ Plot a heatmap of the mean probability of response.
 ``` r
 plot(fit, show_rownames = TRUE)
 ```
+
+    ## The 'threshold' filter has removed 122 categories:
+    ## TNFa&CD107a&CD154&IL2&IL17a&IL4_5_13&IFNg, !TNFa&!CD107a&CD154&IL2&IL17a&IL4_5_13&IFNg, !TNFa&CD107a&!CD154&IL2&IL17a&IL4_5_13&IFNg, TNFa&!CD107a&!CD154&IL2&IL17a&IL4_5_13&IFNg, !TNFa&!CD107a&!CD154&IL2&IL17a&IL4_5_13&IFNg, !TNFa&CD107a&CD154&!IL2&IL17a&IL4_5_13&IFNg, TNFa&!CD107a&CD154&!IL2&IL17a&IL4_5_13&IFNg, !TNFa&!CD107a&CD154&!IL2&IL17a&IL4_5_13&IFNg, TNFa&CD107a&!CD154&!IL2&IL17a&IL4_5_13&IFNg, !TNFa&CD107a&!CD154&!IL2&IL17a&IL4_5_13&IFNg, TNFa&!CD107a&!CD154&!IL2&IL17a&IL4_5_13&IFNg, !TNFa&!CD107a&!CD154&!IL2&IL17a&IL4_5_13&IFNg, TNFa&CD107a&CD154&IL2&!IL17a&IL4_5_13&IFNg, !TNFa&CD107a&CD154&IL2&!IL17a&IL4_5_13&IFNg, TNFa&!CD107a&CD154&IL2&!IL17a&IL4_5_13&IFNg, !TNFa&!CD107a&CD154&IL2&!IL17a&IL4_5_13&IFNg, TNFa&CD107a&!CD154&IL2&!IL17a&IL4_5_13&IFNg, !TNFa&CD107a&!CD154&IL2&!IL17a&IL4_5_13&IFNg, TNFa&!CD107a&!CD154&IL2&!IL17a&IL4_5_13&IFNg, !TNFa&!CD107a&!CD154&IL2&!IL17a&IL4_5_13&IFNg, TNFa&CD107a&CD154&!IL2&!IL17a&IL4_5_13&IFNg, !TNFa&CD107a&CD154&!IL2&!IL17a&IL4_5_13&IFNg, TNFa&!CD107a&CD154&!IL2&!IL17a&IL4_5_13&IFNg, !TNFa&!CD107a&CD154&!IL2&!IL17a&IL4_5_13&IFNg, TNFa&CD107a&!CD154&!IL2&!IL17a&IL4_5_13&IFNg, !TNFa&CD107a&!CD154&!IL2&!IL17a&IL4_5_13&IFNg, TNFa&!CD107a&!CD154&!IL2&!IL17a&IL4_5_13&IFNg, !TNFa&!CD107a&!CD154&!IL2&!IL17a&IL4_5_13&IFNg, !TNFa&CD107a&CD154&IL2&IL17a&!IL4_5_13&IFNg, TNFa&!CD107a&CD154&IL2&IL17a&!IL4_5_13&IFNg, !TNFa&!CD107a&CD154&IL2&IL17a&!IL4_5_13&IFNg, TNFa&CD107a&!CD154&IL2&IL17a&!IL4_5_13&IFNg, !TNFa&CD107a&!CD154&IL2&IL17a&!IL4_5_13&IFNg, TNFa&!CD107a&!CD154&IL2&IL17a&!IL4_5_13&IFNg, !TNFa&!CD107a&!CD154&IL2&IL17a&!IL4_5_13&IFNg, TNFa&CD107a&CD154&!IL2&IL17a&!IL4_5_13&IFNg, !TNFa&CD107a&CD154&!IL2&IL17a&!IL4_5_13&IFNg, TNFa&!CD107a&CD154&!IL2&IL17a&!IL4_5_13&IFNg, !TNFa&!CD107a&CD154&!IL2&IL17a&!IL4_5_13&IFNg, TNFa&CD107a&!CD154&!IL2&IL17a&!IL4_5_13&IFNg, !TNFa&CD107a&!CD154&!IL2&IL17a&!IL4_5_13&IFNg, TNFa&!CD107a&!CD154&!IL2&IL17a&!IL4_5_13&IFNg, !TNFa&!CD107a&!CD154&!IL2&IL17a&!IL4_5_13&IFNg, TNFa&CD107a&CD154&IL2&!IL17a&!IL4_5_13&IFNg, !TNFa&CD107a&CD154&IL2&!IL17a&!IL4_5_13&IFNg, TNFa&!CD107a&CD154&IL2&!IL17a&!IL4_5_13&IFNg, !TNFa&!CD107a&CD154&IL2&!IL17a&!IL4_5_13&IFNg, TNFa&CD107a&!CD154&IL2&!IL17a&!IL4_5_13&IFNg, !TNFa&CD107a&!CD154&IL2&!IL17a&!IL4_5_13&IFNg, TNFa&!CD107a&!CD154&IL2&!IL17a&!IL4_5_13&IFNg, !TNFa&!CD107a&!CD154&IL2&!IL17a&!IL4_5_13&IFNg, TNFa&CD107a&CD154&!IL2&!IL17a&!IL4_5_13&IFNg, !TNFa&CD107a&CD154&!IL2&!IL17a&!IL4_5_13&IFNg, TNFa&!CD107a&CD154&!IL2&!IL17a&!IL4_5_13&IFNg, !TNFa&!CD107a&CD154&!IL2&!IL17a&!IL4_5_13&IFNg, TNFa&CD107a&!CD154&!IL2&!IL17a&!IL4_5_13&IFNg, !TNFa&CD107a&!CD154&!IL2&!IL17a&!IL4_5_13&IFNg, TNFa&!CD107a&!CD154&!IL2&!IL17a&!IL4_5_13&IFNg, !TNFa&!CD107a&!CD154&!IL2&!IL17a&!IL4_5_13&IFNg, TNFa&CD107a&CD154&IL2&IL17a&IL4_5_13&!IFNg, !TNFa&CD107a&CD154&IL2&IL17a&IL4_5_13&!IFNg, TNFa&!CD107a&CD154&IL2&IL17a&IL4_5_13&!IFNg, !TNFa&!CD107a&CD154&IL2&IL17a&IL4_5_13&!IFNg, TNFa&CD107a&!CD154&IL2&IL17a&IL4_5_13&!IFNg, !TNFa&CD107a&!CD154&IL2&IL17a&IL4_5_13&!IFNg, TNFa&!CD107a&!CD154&IL2&IL17a&IL4_5_13&!IFNg, !TNFa&!CD107a&!CD154&IL2&IL17a&IL4_5_13&!IFNg, TNFa&CD107a&CD154&!IL2&IL17a&IL4_5_13&!IFNg, !TNFa&CD107a&CD154&!IL2&IL17a&IL4_5_13&!IFNg, TNFa&!CD107a&CD154&!IL2&IL17a&IL4_5_13&!IFNg, !TNFa&!CD107a&CD154&!IL2&IL17a&IL4_5_13&!IFNg, TNFa&CD107a&!CD154&!IL2&IL17a&IL4_5_13&!IFNg, !TNFa&CD107a&!CD154&!IL2&IL17a&IL4_5_13&!IFNg, TNFa&!CD107a&!CD154&!IL2&IL17a&IL4_5_13&!IFNg, !TNFa&!CD107a&!CD154&!IL2&IL17a&IL4_5_13&!IFNg, TNFa&CD107a&CD154&IL2&!IL17a&IL4_5_13&!IFNg, !TNFa&CD107a&CD154&IL2&!IL17a&IL4_5_13&!IFNg, TNFa&!CD107a&CD154&IL2&!IL17a&IL4_5_13&!IFNg, !TNFa&!CD107a&CD154&IL2&!IL17a&IL4_5_13&!IFNg, TNFa&CD107a&!CD154&IL2&!IL17a&IL4_5_13&!IFNg, !TNFa&CD107a&!CD154&IL2&!IL17a&IL4_5_13&!IFNg, TNFa&!CD107a&!CD154&IL2&!IL17a&IL4_5_13&!IFNg, !TNFa&!CD107a&!CD154&IL2&!IL17a&IL4_5_13&!IFNg, TNFa&CD107a&CD154&!IL2&!IL17a&IL4_5_13&!IFNg, !TNFa&CD107a&CD154&!IL2&!IL17a&IL4_5_13&!IFNg, TNFa&!CD107a&CD154&!IL2&!IL17a&IL4_5_13&!IFNg, !TNFa&!CD107a&CD154&!IL2&!IL17a&IL4_5_13&!IFNg, TNFa&CD107a&!CD154&!IL2&!IL17a&IL4_5_13&!IFNg, !TNFa&CD107a&!CD154&!IL2&!IL17a&IL4_5_13&!IFNg, TNFa&!CD107a&!CD154&!IL2&!IL17a&IL4_5_13&!IFNg, !TNFa&!CD107a&!CD154&!IL2&!IL17a&IL4_5_13&!IFNg, TNFa&CD107a&CD154&IL2&IL17a&!IL4_5_13&!IFNg, !TNFa&CD107a&CD154&IL2&IL17a&!IL4_5_13&!IFNg, TNFa&!CD107a&CD154&IL2&IL17a&!IL4_5_13&!IFNg, !TNFa&!CD107a&CD154&IL2&IL17a&!IL4_5_13&!IFNg, TNFa&CD107a&!CD154&IL2&IL17a&!IL4_5_13&!IFNg, !TNFa&CD107a&!CD154&IL2&IL17a&!IL4_5_13&!IFNg, TNFa&!CD107a&!CD154&IL2&IL17a&!IL4_5_13&!IFNg, !TNFa&!CD107a&!CD154&IL2&IL17a&!IL4_5_13&!IFNg, TNFa&CD107a&CD154&!IL2&IL17a&!IL4_5_13&!IFNg, !TNFa&CD107a&CD154&!IL2&IL17a&!IL4_5_13&!IFNg, TNFa&!CD107a&CD154&!IL2&IL17a&!IL4_5_13&!IFNg, !TNFa&!CD107a&CD154&!IL2&IL17a&!IL4_5_13&!IFNg, TNFa&CD107a&!CD154&!IL2&IL17a&!IL4_5_13&!IFNg, !TNFa&CD107a&!CD154&!IL2&IL17a&!IL4_5_13&!IFNg, TNFa&!CD107a&!CD154&!IL2&IL17a&!IL4_5_13&!IFNg, !TNFa&!CD107a&!CD154&!IL2&IL17a&!IL4_5_13&!IFNg, TNFa&CD107a&CD154&IL2&!IL17a&!IL4_5_13&!IFNg, !TNFa&CD107a&CD154&IL2&!IL17a&!IL4_5_13&!IFNg, TNFa&!CD107a&CD154&IL2&!IL17a&!IL4_5_13&!IFNg, !TNFa&!CD107a&CD154&IL2&!IL17a&!IL4_5_13&!IFNg, TNFa&CD107a&!CD154&IL2&!IL17a&!IL4_5_13&!IFNg, !TNFa&CD107a&!CD154&IL2&!IL17a&!IL4_5_13&!IFNg, TNFa&!CD107a&!CD154&IL2&!IL17a&!IL4_5_13&!IFNg, !TNFa&!CD107a&!CD154&IL2&!IL17a&!IL4_5_13&!IFNg, TNFa&CD107a&CD154&!IL2&!IL17a&!IL4_5_13&!IFNg, !TNFa&CD107a&CD154&!IL2&!IL17a&!IL4_5_13&!IFNg, TNFa&!CD107a&CD154&!IL2&!IL17a&!IL4_5_13&!IFNg, !TNFa&!CD107a&CD154&!IL2&!IL17a&!IL4_5_13&!IFNg, TNFa&CD107a&!CD154&!IL2&!IL17a&!IL4_5_13&!IFNg, !TNFa&CD107a&!CD154&!IL2&!IL17a&!IL4_5_13&!IFNg, TNFa&!CD107a&!CD154&!IL2&!IL17a&!IL4_5_13&!IFNg
 
 ![image](https://github.com/seshadrilab/tutorials/blob/main/flow_analysis_COMPASS/README_files/figure-gfm/unnamed-chunk-31-1.png?raw=true)
