@@ -210,6 +210,11 @@ The following steps were inspired from advice in the COMPASS [issue #81](https:/
 gs <- load_gs(here::here("out/GatingSet"))
 ```
 
+Take a look at the different nodes
+
+```{r}
+plot(gs, fontsize=15, bool=T)
+```
 
 ## Get matrices of expression data
 
@@ -236,126 +241,90 @@ dmso_samples <- metadata %>%
 dmso <- gs[dmso_samples]
 ```
 
-Extract data for the "CD4+" population only. These are 'cytoset' objects, which are a collection of 'cytoframe's.
+Extract data for the "CD4+" populations only. We're only going to use 7 of the markers.
 
 ```{r}
-spike1_cd4 <- gs_pop_get_data(spike1, "4+")  # Using "+4" node name
-dmso_cd4 <- gs_pop_get_data(dmso, "4+")
-```
+# All the CD4+ nodes
+mynodes <- c("4+/107a",
+             "4+/154",
+             "4+/IFNG",
+             "4+/IL2",
+             "4+/IL17",
+             "4+/IL4513",
+             "4+/TNF")
 
-We can see the sample names in the object like so:
+# For mapping between nodes names and marker names explicitly
+maplist <- list("4+/107a" = "CD107a",
+                "4+/154" = "CD154",
+                "4+/IFNG" = "IFNg",
+                "4+/IL2" = "IL2",
+                "4+/IL17" = "IL17a",
+                "4+/IL4513" = "IL4_5_13",
+                "4+/TNF" = "TNFa")
 
-```{r}
-sampleNames(dmso_cd4)
-```
-
-Let's take a look at one of these 'cytoframes', which are similar to a matrix of expression values.
-
-```{r}
-samplename <- "114716.fcs_445737"
-cytoframe1 <- dmso_cd4[[samplename]]
-head(cytoframe1)
-```
-
-Note that we have gates we don't need for our boolean combinations, like time and forward/side scatter (Time, FSC-A, FSC-H, SSC-A). We will get rid of these below.
-
-Get a list of expression matrices for stim and unstim from the cytoset/cytoframe objects.
-
-```{r}
-markernames <- c("Time", "FSC-A", "FSC-H", "SSC-A", "CD8b", "TNFa", "CD107a",
-                 "CD154", "CD3", "IL2", "CD4", "IL17a", "IL4_5_13", "CD14_19",
-                 "CCR7", "CD38", "LD", "IFNg", "CD45RA", "HLADR")
-
-markermap <- list("IL2", "IL4_5_13", "IFNg", "TNFa", "IL17a", "CD154", "CD107a")
-
-get_mtx_list <- function(cytoset_obj) {
-  outlist = list()
-  for (i in sampleNames(cytoset_obj)) {
-    sub_cf <- get_cytoframe_from_cs(cytoset_obj, i)  # Extract cytoframe from cytoset
-    out <- exprs(sub_cf)  # Get expression values as a matrix
-    colnames(out) <- markernames  # Rename columns (e.g. <V450-A> becomes IFNg)
-    out[out < 0] <- 0  # Replace negative numbers with 0 for CellCounts() later
-    out <- out[, colnames(out) %in% markermap]  # Only keep markers we want boolean combos of
-    outlist[[i]] <- out
-  }
-  return(outlist)
-}
-
-spikelist <- get_mtx_list(spike1_cd4)
-dmsolist <- get_mtx_list(dmso_cd4)
-```
-
-Now we have named lists of matrices of expression data, using sample names as indices
-
-```{r}
-names(dmsolist)
-```
-
-```{r}
-head(dmsolist[[1]])
-```
-
-Save
-
-```{r}
-saveRDS(spikelist, here::here("out/spikelist.rds"))
-saveRDS(dmsolist, here::here("out/dmsolist.rds"))
+spike1_cd4 <- gs_get_singlecell_expression(spike1, nodes = mynodes, map = maplist)
+dmso_cd4 <- gs_get_singlecell_expression(dmso, nodes = mynodes, map = maplist)
 ```
 
 ## Create boolean combinations
 
 ```{r}
-spikelist <- readRDS(here::here("out/spikelist.rds"))
-dmsolist <- readRDS(here::here("out/dmsolist.rds"))
+n_s <- CellCounts(spike1_cd4, Combinations(7)) # Stimmed data
+n_u <- CellCounts(dmso_cd4, Combinations(7)) # Unstimmed data
 ```
 
-Can take a little while
+Use subject ID as rownames
 
 ```{r}
-# Seven markers
-n_s <- CellCounts(spikelist, Combinations(7)) # Stimmed data
-n_u <- CellCounts(dmsolist, Combinations(7)) # Unstimmed data
+rownames(n_s) <- gsub("114722.fcs_383957", "23", rownames(n_s))
+rownames(n_s) <- gsub("114782.fcs_941925", "25", rownames(n_s))
+rownames(n_s) <- gsub("114758.fcs_429530", "133C", rownames(n_s))
+rownames(n_s) <- gsub("114794.fcs_318768", "142C", rownames(n_s))
+rownames(n_s) <- gsub("114770.fcs_392388", "150C", rownames(n_s))
+
+rownames(n_u) <- gsub("114716.fcs_445737", "23", rownames(n_u))
+rownames(n_u) <- gsub("114776.fcs_846625", "25", rownames(n_u))
+rownames(n_u) <- gsub("114752.fcs_489936", "133C", rownames(n_u))
+rownames(n_u) <- gsub("114788.fcs_371622", "142C", rownames(n_u))
+rownames(n_u) <- gsub("114764.fcs_435350", "150C", rownames(n_u))
 ```
 
-Save count matrices and metadata
+Filter to only keep combinations where at least three samples had at least six cells expressing that particular combination of markers. 
+
+This is based on the original COMPASS Category Filter.
 
 ```{r}
-saveRDS(n_s, here::here("out/n_s.rds"))
-saveRDS(n_u, here::here("out/n_u.rds"))
-saveRDS(metadata, here::here("out/metadata.rds"))
+n_s_filtered <- n_s[, colSums(n_s > 5) >= 1, drop = FALSE]
+n_u_filtered <- n_u[, colSums(n_u > 5) >= 1, drop = FALSE]
 ```
 
+Filter to keep only column names common to both
+
+```{r}
+# Find common column names
+common_cols <- intersect(colnames(n_s_filtered), colnames(n_u_filtered))
+
+# Subset matrices to keep only common columns
+n_s_filtered2 <- n_s_filtered[, common_cols, drop=FALSE]
+n_u_filtered2 <- n_u_filtered[, common_cols, drop=FALSE]
+```
 
 # Run SimpleCOMPASS
-
-```{r}
-n_s <- readRDS(here::here("out/n_s.rds"))
-n_u <- readRDS(here::here("out/n_u.rds"))
-metadata <- readRDS(here::here("out/metadata.rds"))
-```
-
-```{r}
-# Use subject ID as rownames
-rownames(n_s) <- c("23", "25", "133C", "142C", "150C")
-rownames(n_u) <- c("23", "25", "133C", "142C", "150C")
-```
 
 Fits a polyfunctionality response model to our data.
 
 ```{r, message=FALSE}
-set.seed(123)
-
-fit = COMPASS::SimpleCOMPASS(n_s = n_s,
-                             n_u = n_u,
+fit = COMPASS::SimpleCOMPASS(n_s = n_s_filtered2,
+                             n_u = n_u_filtered2,
                              meta = metadata,
-                             individual_id = "SAMPLE ID")
+                             individual_id = "SAMPLE ID",
+                             iterations = 40000)
 ```
 
 Save the COMPASS run output.
 
 ```{r}
 saveRDS(fit, file.path(here::here("out/COMPASSResult"), "COMPASSResult.rds"))
-# fit <- readRDS(file.path(here::here("out/COMPASSResult"), "COMPASSResult.rds"))
 ```
 
 Save the Functionality and Polyfunctionality Scores.
