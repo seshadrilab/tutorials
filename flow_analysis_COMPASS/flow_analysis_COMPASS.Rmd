@@ -289,9 +289,9 @@ rownames(n_u) <- gsub("114788.fcs_371622", "142C", rownames(n_u))
 rownames(n_u) <- gsub("114764.fcs_435350", "150C", rownames(n_u))
 ```
 
-Filter to only keep combinations where at least three samples had at least six cells expressing that particular combination of markers. 
+Filter to only keep combinations where at least one sample has at least six cells expressing that particular combination of markers. 
 
-This is based on the original COMPASS Category Filter.
+This is based on the original COMPASS Category Filter, which requred at least **three** samples to have at least six cells. There are no categories that are in both the stim and unstim data where more than two samples have cells.
 
 ```{r}
 n_s_filtered <- n_s[, colSums(n_s > 5) >= 1, drop = FALSE]
